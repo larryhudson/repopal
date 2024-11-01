@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Any, Dict, List
 
 class WebhookProvider(str, Enum):
@@ -8,6 +8,8 @@ class WebhookProvider(str, Enum):
     LINEAR = "linear"
 
 class StandardizedEvent(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     provider: WebhookProvider
     event_type: str  # e.g. "pull_request", "issue", "push"
     action: str | None = None  # e.g. "opened", "closed", "updated"
