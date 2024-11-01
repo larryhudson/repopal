@@ -76,3 +76,73 @@ def test_webhook_factory_returns_correct_handler():
 def test_webhook_factory_raises_for_unknown_provider():
     with pytest.raises(KeyError):
         WebhookHandlerFactory.get_handler("unknown_provider")
+
+@pytest.fixture
+def pull_request_payload():
+    return {
+        "action": "opened",
+        "pull_request": {
+            "title": "Add new feature",
+            "body": "This PR adds an awesome new feature",
+            "user": {"login": "developer1"}
+        },
+        "repository": {"full_name": "org/repo"},
+        "sender": {"login": "developer1"}
+    }
+
+@pytest.fixture
+def issue_payload():
+    return {
+        "action": "opened",
+        "issue": {
+            "title": "Bug report",
+            "body": "Something is broken",
+            "user": {"login": "user1"}
+        },
+        "repository": {"full_name": "org/repo"},
+        "sender": {"login": "user1"}
+    }
+
+@pytest.fixture
+def issue_comment_payload():
+    return {
+        "action": "created",
+        "comment": {
+            "body": "Great idea!",
+            "user": {"login": "reviewer1"}
+        },
+        "issue": {
+            "title": "Feature request"
+        },
+        "repository": {"full_name": "org/repo"},
+        "sender": {"login": "reviewer1"}
+    }
+
+def test_github_webhook_pr_user_request(github_handler, pull_request_payload):
+    result = github_handler.process_webhook(pull_request_payload)
+    expected_request = (
+        "Review pull request: Add new feature\n"
+        "Description: This PR adds an awesome new feature\n"
+        "Author: developer1"
+    )
+    assert result.user_request == expected_request
+    assert result.event_type == "pull_request_opened"
+
+def test_github_webhook_issue_user_request(github_handler, issue_payload):
+    result = github_handler.process_webhook(issue_payload)
+    expected_request = (
+        "Check issue: Bug report\n"
+        "Description: Something is broken\n"
+        "Author: user1"
+    )
+    assert result.user_request == expected_request
+    assert result.event_type == "issue_opened"
+
+def test_github_webhook_comment_user_request(github_handler, issue_comment_payload):
+    result = github_handler.process_webhook(issue_comment_payload)
+    expected_request = (
+        "Review issue comment on: Feature request\n"
+        "Comment: Great idea!\n"
+        "Author: reviewer1"
+    )
+    assert result.user_request == expected_request
