@@ -20,5 +20,5 @@ class WebhookHandlerFactory:
     @classmethod
     def get_handler(cls, provider: WebhookProvider) -> WebhookHandler:
         if provider not in cls._handlers:
-            raise ValueError(f"No handler registered for provider: {provider}")
+            raise KeyError(f"No handler registered for provider: {provider}")
         return cls._handlers[provider]

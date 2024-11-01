@@ -56,7 +56,13 @@ class GitHubWebhookHandler(WebhookHandler):
                 f"Author: {comment.get('user', {}).get('login', 'unknown')}"
             )
         else:
-            user_request = f"Handle {event_type} event from {payload.get('sender', {}).get('login', 'unknown')}"
+            if "pusher" in payload:
+                user_request = (
+                    f"Process push event\n"
+                    f"Author: {payload.get('pusher', {}).get('name', 'unknown')}"
+                )
+            else:
+                user_request = f"Handle {event_type} event from {payload.get('sender', {}).get('login', 'unknown')}"
 
         # Determine base event type without action
         base_event_type = "push"
@@ -71,7 +77,7 @@ class GitHubWebhookHandler(WebhookHandler):
         standardized_payload = {
             "title": None,
             "description": None,
-            "user": payload.get("sender", {}).get("login"),
+            "user": payload.get("pusher", {}).get("name") if "pusher" in payload else payload.get("sender", {}).get("login"),
             "repository": payload.get("repository", {}).get("full_name"),
             "url": payload.get("repository", {}).get("html_url"),
         }
