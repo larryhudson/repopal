@@ -10,8 +10,9 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"  # Default for testing
     TESTING: bool = False
 
-    class Config:
-        env_file = ".env"
+    model_config = {
+        "env_file": ".env"
+    }
 
 
 @lru_cache
