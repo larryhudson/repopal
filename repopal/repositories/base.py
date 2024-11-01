@@ -1,19 +1,22 @@
- from typing import Generic, TypeVar, Type
- from sqlalchemy.orm import Session
- from app.core.database import Base
+from typing import Generic, Type, TypeVar
 
- ModelType = TypeVar("ModelType", bound=Base)
+from sqlalchemy.orm import Session
 
- class BaseRepository(Generic[ModelType]):
-     def __init__(self, model: Type[ModelType]):
-         self.model = model
+from repopal.core.database import Base
 
-     def get(self, db: Session, id: int) -> ModelType | None:
-         return db.query(self.model).filter(self.model.id == id).first()
+ModelType = TypeVar("ModelType", bound=Base)
 
-     def create(self, db: Session, *, obj_in) -> ModelType:
-         db_obj = self.model(**obj_in.dict())
-         db.add(db_obj)
-         db.commit()
-         db.refresh(db_obj)
-         return db_obj
+
+class BaseRepository(Generic[ModelType]):
+    def __init__(self, model: Type[ModelType]):
+        self.model = model
+
+    def get(self, db: Session, id: int) -> ModelType | None:
+        return db.query(self.model).filter(self.model.id == id).first()
+
+    def create(self, db: Session, *, obj_in) -> ModelType:
+        db_obj = self.model(**obj_in.dict())
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj

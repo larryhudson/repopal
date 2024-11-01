@@ -1,16 +1,20 @@
- from pydantic_settings import BaseSettings
- from functools import lru_cache
+from functools import lru_cache
 
- class Settings(BaseSettings):
-     PROJECT_NAME: str = "FastAPI Project"
-     DATABASE_URL: str
-     REDIS_URL: str
+from pydantic_settings import BaseSettings
 
-     class Config:
-         env_file = ".env"
 
- @lru_cache
- def get_settings():
-     return Settings()
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "FastAPI Project"
+    DATABASE_URL: str
+    REDIS_URL: str
 
- settings = get_settings()
+    class Config:
+        env_file = ".env"
+
+
+@lru_cache
+def get_settings():
+    return Settings()
+
+
+settings = get_settings()

@@ -1,12 +1,10 @@
- from celery import Celery
- from app.core.config import settings
+from celery import Celery
 
- celery = Celery(
-     "worker",
-     broker=settings.REDIS_URL,
-     backend=settings.REDIS_URL
- )
+from repopal.core.config import settings
 
- @celery.task
- def example_task():
-     return "Task completed"
+celery = Celery("worker", broker=settings.REDIS_URL, backend=settings.REDIS_URL)
+
+
+@celery.task
+def example_task():
+    return "Task completed"
