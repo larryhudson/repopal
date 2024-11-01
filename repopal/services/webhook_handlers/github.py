@@ -27,10 +27,10 @@ class GitHubWebhookHandler(WebhookHandler):
         # Determine base event type first
         if "pull_request" in payload:
             event_type = "pull_request"
-        elif "issues" in payload or "issue" in payload:
-            event_type = "issue"
         elif "comment" in payload:
             event_type = "comment"
+        elif "issues" in payload or "issue" in payload:
+            event_type = "issue"
         else:
             event_type = "push"
             
@@ -53,7 +53,7 @@ class GitHubWebhookHandler(WebhookHandler):
         elif "comment" in payload:
             comment = payload["comment"]
             context = "issue" if "issue" in payload else "pull request"
-            parent = payload.get("issue", payload.get("pull_request", {}))
+            parent = payload.get("issue") or payload.get("pull_request", {})
             user_request = (
                 f"Review {context} comment on: {parent.get('title', 'Untitled')}\n"
                 f"Comment: {comment.get('body', 'No comment body')}\n"
