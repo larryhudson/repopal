@@ -28,16 +28,33 @@ class GitHubWebhookHandler(WebhookHandler):
         elif "issues" in payload:
             event_type = f"issue_{event_type}"
             
-        # Generate user request string based on event type
+        # Generate detailed user request string based on event type
         user_request = ""
         if "pull_request" in payload:
             pr = payload["pull_request"]
-            user_request = f"Review pull request: {pr.get('title', 'Untitled PR')}"
+            user_request = (
+                f"Review pull request: {pr.get('title', 'Untitled PR')}\n"
+                f"Description: {pr.get('body', 'No description provided')}\n"
+                f"Author: {pr.get('user', {}).get('login', 'unknown')}"
+            )
         elif "issues" in payload:
             issue = payload["issue"]
-            user_request = f"Check issue: {issue.get('title', 'Untitled Issue')}"
+            user_request = (
+                f"Check issue: {issue.get('title', 'Untitled Issue')}\n"
+                f"Description: {issue.get('body', 'No description provided')}\n"
+                f"Author: {issue.get('user', {}).get('login', 'unknown')}"
+            )
+        elif "comment" in payload:
+            comment = payload["comment"]
+            context = "issue" if "issue" in payload else "pull request"
+            parent = payload.get("issue", payload.get("pull_request", {}))
+            user_request = (
+                f"Review {context} comment on: {parent.get('title', 'Untitled')}\n"
+                f"Comment: {comment.get('body', 'No comment body')}\n"
+                f"Author: {comment.get('user', {}).get('login', 'unknown')}"
+            )
         else:
-            user_request = f"Handle {event_type} event"
+            user_request = f"Handle {event_type} event from {payload.get('sender', {}).get('login', 'unknown')}"
 
         return StandardizedEvent(
             provider=WebhookProvider.GITHUB,
