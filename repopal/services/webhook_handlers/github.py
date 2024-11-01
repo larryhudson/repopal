@@ -43,13 +43,6 @@ class GitHubWebhookHandler(WebhookHandler):
                 f"Description: {pr.get('body', 'No description provided')}\n"
                 f"Author: {pr.get('user', {}).get('login', 'unknown')}"
             )
-        elif "issue" in payload:
-            issue = payload["issue"]
-            user_request = (
-                f"Check issue: {issue.get('title', 'Untitled Issue')}\n"
-                f"Description: {issue.get('body', 'No description provided')}\n"
-                f"Author: {issue.get('user', {}).get('login', 'unknown')}"
-            )
         elif "comment" in payload:
             comment = payload["comment"]
             context = "issue" if "issue" in payload else "pull request"
@@ -58,6 +51,13 @@ class GitHubWebhookHandler(WebhookHandler):
                 f"Review {context} comment on: {parent.get('title', 'Untitled')}\n"
                 f"Comment: {comment.get('body', 'No comment body')}\n"
                 f"Author: {comment.get('user', {}).get('login', 'unknown')}"
+            )
+        elif "issue" in payload:
+            issue = payload["issue"]
+            user_request = (
+                f"Check issue: {issue.get('title', 'Untitled Issue')}\n"
+                f"Description: {issue.get('body', 'No description provided')}\n"
+                f"Author: {issue.get('user', {}).get('login', 'unknown')}"
             )
         else:
             if "pusher" in payload:
