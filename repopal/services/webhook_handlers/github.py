@@ -28,9 +28,21 @@ class GitHubWebhookHandler(WebhookHandler):
         elif "issues" in payload:
             event_type = f"issue_{event_type}"
             
+        # Generate user request string based on event type
+        user_request = ""
+        if "pull_request" in payload:
+            pr = payload["pull_request"]
+            user_request = f"Review pull request: {pr.get('title', 'Untitled PR')}"
+        elif "issues" in payload:
+            issue = payload["issue"]
+            user_request = f"Check issue: {issue.get('title', 'Untitled Issue')}"
+        else:
+            user_request = f"Handle {event_type} event"
+
         return StandardizedEvent(
             provider=WebhookProvider.GITHUB,
             event_type=event_type,
+            user_request=user_request,
             payload={
                 "repository": payload.get("repository", {}).get("full_name"),
                 "sender": payload.get("sender", {}).get("login"),

@@ -10,5 +10,6 @@ class WebhookProvider(str, Enum):
 class StandardizedEvent(BaseModel):
     provider: WebhookProvider
     event_type: str
+    user_request: str
     payload: Dict[str, Any]
     raw_payload: Dict[str, Any]
