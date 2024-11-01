@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 class WebhookProvider(str, Enum):
     GITHUB = "github"
