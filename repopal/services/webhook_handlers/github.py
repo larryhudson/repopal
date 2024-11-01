@@ -58,14 +58,42 @@ class GitHubWebhookHandler(WebhookHandler):
         else:
             user_request = f"Handle {event_type} event from {payload.get('sender', {}).get('login', 'unknown')}"
 
+        # Determine base event type without action
+        base_event_type = "push"
+        if "pull_request" in payload:
+            base_event_type = "pull_request"
+        elif "issues" in payload:
+            base_event_type = "issue"
+        elif "comment" in payload:
+            base_event_type = "comment"
+
+        # Extract common fields into standardized payload
+        standardized_payload = {
+            "title": None,
+            "description": None,
+            "user": payload.get("sender", {}).get("login"),
+            "repository": payload.get("repository", {}).get("full_name"),
+            "url": payload.get("repository", {}).get("html_url"),
+        }
+
+        if "pull_request" in payload:
+            pr = payload["pull_request"]
+            standardized_payload.update({
+                "title": pr.get("title"),
+                "description": pr.get("body"),
+            })
+        elif "issue" in payload:
+            issue = payload["issue"]
+            standardized_payload.update({
+                "title": issue.get("title"),
+                "description": issue.get("body"),
+            })
+
         return StandardizedEvent(
             provider=WebhookProvider.GITHUB,
-            event_type=event_type,
+            event_type=base_event_type,
+            action=payload.get("action"),
             user_request=user_request,
-            payload={
-                "repository": payload.get("repository", {}).get("full_name"),
-                "sender": payload.get("sender", {}).get("login"),
-                "action": payload.get("action"),
-            },
+            payload=standardized_payload,
             raw_payload=payload
         )

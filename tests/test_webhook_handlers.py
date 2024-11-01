@@ -60,14 +60,11 @@ def test_github_webhook_process_push_event(github_handler, github_push_payload):
     result = github_handler.process_webhook(github_push_payload)
     
     assert isinstance(result, StandardizedEvent)
-    assert result.repository_url == "https://github.com/octocat/Hello-World"
-    assert result.repository_name == "octocat/Hello-World"
     assert result.event_type == "push"
-    assert result.branch == "main"
-    assert result.author == "octocat"
-    assert len(result.commits) == 1
-    assert result.commits[0].id == "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d"
-    assert result.commits[0].message == "Update README.md"
+    assert result.action is None  # Push events don't have actions
+    assert result.payload["repository"] == "octocat/Hello-World"
+    assert result.payload["url"] == "https://github.com/octocat/Hello-World"
+    assert result.payload["user"] == "octocat"
 
 def test_webhook_factory_returns_correct_handler():
     WebhookHandlerFactory.initialize()  # Initialize before getting handler
@@ -127,7 +124,8 @@ def test_github_webhook_pr_user_request(github_handler, pull_request_payload):
         "Author: developer1"
     )
     assert result.user_request == expected_request
-    assert result.event_type == "pull_request_opened"
+    assert result.event_type == "pull_request"
+    assert result.action == "opened"
 
 def test_github_webhook_issue_user_request(github_handler, issue_payload):
     result = github_handler.process_webhook(issue_payload)
@@ -137,7 +135,8 @@ def test_github_webhook_issue_user_request(github_handler, issue_payload):
         "Author: user1"
     )
     assert result.user_request == expected_request
-    assert result.event_type == "issue_opened"
+    assert result.event_type == "issue"
+    assert result.action == "opened"
 
 def test_github_webhook_comment_user_request(github_handler, issue_comment_payload):
     result = github_handler.process_webhook(issue_comment_payload)

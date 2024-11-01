@@ -9,12 +9,8 @@ class WebhookProvider(str, Enum):
 
 class StandardizedEvent(BaseModel):
     provider: WebhookProvider
-    event_type: str
-    user_request: str
-    payload: Dict[str, Any]
-    raw_payload: Dict[str, Any]
-    repository_url: str | None = None
-    repository_name: str | None = None
-    branch: str | None = None
-    author: str | None = None
-    commits: List[Dict[str, Any]] = []
+    event_type: str  # e.g. "pull_request", "issue", "push"
+    action: str | None = None  # e.g. "opened", "closed", "updated"
+    user_request: str  # Human readable description of the event
+    payload: Dict[str, Any]  # Standardized payload with common fields
+    raw_payload: Dict[str, Any]  # Original provider-specific payload
