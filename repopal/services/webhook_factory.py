@@ -10,8 +10,10 @@ class WebhookHandlerFactory:
     @classmethod
     def initialize(cls):
         settings = get_settings()
+        # For testing, use a default secret if not configured
+        github_secret = getattr(settings, "GITHUB_WEBHOOK_SECRET", "test_secret")
         cls._handlers = {
-            WebhookProvider.GITHUB: GitHubWebhookHandler(settings.GITHUB_WEBHOOK_SECRET),
+            WebhookProvider.GITHUB: GitHubWebhookHandler(github_secret),
             # Add other handlers here as they're implemented
         }
 

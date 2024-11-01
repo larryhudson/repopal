@@ -70,6 +70,7 @@ def test_github_webhook_process_push_event(github_handler, github_push_payload):
     assert result.commits[0].message == "Update README.md"
 
 def test_webhook_factory_returns_correct_handler():
+    WebhookHandlerFactory.initialize()  # Initialize before getting handler
     handler = WebhookHandlerFactory.get_handler(WebhookProvider.GITHUB)
     assert isinstance(handler, GitHubWebhookHandler)
 
