@@ -24,11 +24,15 @@ class GitHubWebhookHandler(WebhookHandler):
         return hmac.compare_digest(signature, expected_signature)
 
     def process_webhook(self, payload: Dict[str, Any]) -> StandardizedEvent:
-        event_type = payload.get("action", "unknown")
+        # Determine base event type first
         if "pull_request" in payload:
-            event_type = f"pull_request_{event_type}"
-        elif "issues" in payload:
-            event_type = f"issue_{event_type}"
+            event_type = "pull_request"
+        elif "issues" in payload or "issue" in payload:
+            event_type = "issue"
+        elif "comment" in payload:
+            event_type = "comment"
+        else:
+            event_type = "push"
             
         # Generate detailed user request string based on event type
         user_request = ""
@@ -64,14 +68,6 @@ class GitHubWebhookHandler(WebhookHandler):
             else:
                 user_request = f"Handle {event_type} event from {payload.get('sender', {}).get('login', 'unknown')}"
 
-        # Determine base event type without action
-        base_event_type = "push"
-        if "pull_request" in payload:
-            base_event_type = "pull_request"
-        elif "issues" in payload:
-            base_event_type = "issue"
-        elif "comment" in payload:
-            base_event_type = "comment"
 
         # Extract common fields into standardized payload
         standardized_payload = {
@@ -97,7 +93,7 @@ class GitHubWebhookHandler(WebhookHandler):
 
         return StandardizedEvent(
             provider=WebhookProvider.GITHUB,
-            event_type=base_event_type,
+            event_type=event_type,
             action=payload.get("action"),
             user_request=user_request,
             payload=standardized_payload,
