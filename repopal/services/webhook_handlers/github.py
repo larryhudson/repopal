@@ -43,7 +43,7 @@ class GitHubWebhookHandler(WebhookHandler):
                 f"Description: {pr.get('body', 'No description provided')}\n"
                 f"Author: {pr.get('user', {}).get('login', 'unknown')}"
             )
-        elif "issues" in payload and "issue" in payload:
+        elif "issue" in payload:
             issue = payload["issue"]
             user_request = (
                 f"Check issue: {issue.get('title', 'Untitled Issue')}\n"
