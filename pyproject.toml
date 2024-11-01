@@ -3,6 +3,7 @@ name = "repopal"
 version = "0.1.0"
 description = "FastAPI project with SQLAlchemy and Celery"
 authors = ["Your Name <your.email@example.com>"]
+packages = [{include = "repopal"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
