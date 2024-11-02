@@ -56,7 +56,10 @@ async def test_select_and_prepare_command_success(
     mock_command_factory.get_commands_for_event.assert_called_once_with(
         event.event_type
     )
-    mock_llm.select_command.assert_called_once()
+    mock_llm.select_command.assert_called_once_with(
+        "Test user request",
+        [{"name": "test_command", "description": "Test command description"}]
+    )
     mock_llm.generate_command_args.assert_called_once()
     assert isinstance(command, MockCommand)
     assert args == {"arg1": "value1"}
