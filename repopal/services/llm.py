@@ -1,11 +1,11 @@
 from typing import Any, Dict, List
-import openai
+from litellm import acompletion
 from repopal.core.config import settings
 
 class LLMService:
     def __init__(self):
-        openai.api_key = settings.OPENAI_API_KEY
-        self.model = settings.OPENAI_MODEL
+        self.model = f"{settings.LLM_PROVIDER}/{settings.LLM_MODEL}"
+        self.api_key = settings.LLM_API_KEY
 
     async def select_command(self, user_request: str, available_commands: List[Dict[str, str]]) -> str:
         """
@@ -13,8 +13,9 @@ class LLMService:
         """
         prompt = self._build_command_selection_prompt(user_request, available_commands)
         
-        response = await openai.ChatCompletion.acreate(
+        response = await acompletion(
             model=self.model,
+            api_key=self.api_key,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that selects the most appropriate command based on user requests."},
                 {"role": "user", "content": prompt}
@@ -29,8 +30,9 @@ class LLMService:
         """
         prompt = self._build_args_generation_prompt(user_request, command_docs)
         
-        response = await openai.ChatCompletion.acreate(
+        response = await acompletion(
             model=self.model,
+            api_key=self.api_key,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that generates command arguments based on user requests."},
                 {"role": "user", "content": prompt}

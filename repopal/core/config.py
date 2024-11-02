@@ -10,9 +10,10 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"  # Default for testing
     TESTING: bool = False
     
-    # OpenAI Settings
-    OPENAI_API_KEY: str = ""
-    OPENAI_MODEL: str = "gpt-4"
+    # LLM Settings
+    LLM_MODEL: str = "gpt-4"  # Default model
+    LLM_API_KEY: str = ""     # API key for the model provider
+    LLM_PROVIDER: str = "openai"  # Provider (openai, azure, anthropic, etc)
 
     model_config = {
         "env_file": ".env"
