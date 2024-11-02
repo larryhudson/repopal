@@ -108,6 +108,14 @@ WORKDIR /workspace
 CMD ["bash"]
 """
 
+    @property
+    def metadata(self):
+        return CommandMetadata(
+            name="test_command",
+            description="Test command that echoes text",
+            documentation="A simple test command that echoes text for testing purposes"
+        )
+
     async def execute(self, args: Dict[str, Any], env_manager) -> Any:
         exit_code, output = env_manager.run_in_container("echo 'test successful'")
         return {
