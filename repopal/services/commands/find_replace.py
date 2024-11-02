@@ -53,7 +53,12 @@ CMD ["tail", "-f", "/dev/null"]
 
     def get_execution_command(self, args: FindReplaceArgs) -> str:
         """Return the shell command to execute the find and replace operation"""
-        return f"find . -type f -name '{args.file_pattern}' -exec sed -i 's/{args.find_pattern}/{args.replace_text}/g' {{}} +"
+        # Escape special characters for sed
+        find_pattern = args.find_pattern.replace("/", "\\/")
+        replace_text = args.replace_text.replace("/", "\\/")
+        
+        # Use set -e to fail on errors, add echo to verify changes
+        return f"set -e && find . -type f -name '{args.file_pattern}' -exec sed -i 's/{find_pattern}/{replace_text}/g' {{}} + && echo 'Replacement complete' && cat {args.file_pattern}"
 
     def can_handle_event(self, event_type: str) -> bool:
         # This command can be triggered by various events
