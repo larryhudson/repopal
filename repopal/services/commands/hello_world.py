@@ -1,10 +1,12 @@
 from pydantic import BaseModel
-from repopal.schemas.command import CommandMetadata, CommandResult
+
+from repopal.schemas.command import CommandMetadata
 from repopal.services.commands.base import Command
 
 
 class HelloWorldArgs(BaseModel):
     """Arguments for hello world operation"""
+
     pass
 
 
@@ -13,14 +15,6 @@ class HelloWorldCommand(Command[HelloWorldArgs]):
 
     dockerfile = """
 FROM python:3.9-slim
-
-# Create non-root user
-RUN useradd -m -u 1000 appuser && \
-    mkdir -p /workspace && \
-    chown -R appuser:appuser /workspace
-
-WORKDIR /workspace
-USER appuser
 
 CMD ["tail", "-f", "/dev/null"]
 """
