@@ -24,6 +24,7 @@ def service():
         instance.select_command.return_value = "test_command"
         instance.generate_command_args.return_value = {"arg1": "value1"}
         service = CommandSelectorService()
+        service.llm = instance  # Explicitly set the mock instance
         yield service, instance
 
 

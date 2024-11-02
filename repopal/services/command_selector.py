@@ -31,7 +31,8 @@ class CommandSelectorService:
 
         # Use LLM to select the best command
         selected_command_name = await self.llm.select_command(
-            event.user_request, command_descriptions
+            event.user_request,
+            command_descriptions
         )
 
         # Get the selected command instance
