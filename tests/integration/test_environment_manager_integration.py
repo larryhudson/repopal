@@ -20,7 +20,7 @@ def test_repo(tmp_path):
 
     # Create a test file
     test_file = repo_dir / "test.txt"
-    test_file.write_text("test content")
+    test_file.write_text("Hello world! This is a test file.")
 
     # Commit the file
     repo.index.add(["test.txt"])
@@ -58,10 +58,21 @@ async def test_environment_manager_setup(test_repo):
         assert exit_code == 0
         assert output.strip() == "test_value"
 
-        # Execute the command
-        result = await command.execute({}, manager)
+        # Execute find/replace command
+        args = {
+            "find": "world",
+            "replace": "everyone",
+            "file_pattern": "*.txt"
+        }
+        result = await command.execute(args, manager)
+        
+        # Verify command success
         assert result["success"]
-        assert "test successful" in result["message"]
+        
+        # Verify file was modified
+        modified_content = (work_dir / "test.txt").read_text()
+        assert "Hello everyone!" in modified_content
+        assert "world" not in modified_content
 
     finally:
         manager.cleanup()
