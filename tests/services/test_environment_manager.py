@@ -131,7 +131,7 @@ async def test_environment_manager_setup(test_repo):
     
     config = EnvironmentConfig(
         repo_url=str(test_repo),
-        branch="master",
+        branch="main",
         environment_vars={"TEST_VAR": "test_value"}
     )
     
