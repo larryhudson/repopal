@@ -31,7 +31,7 @@ class CommandSelectorService:
 
         # Use LLM to select the best command
         selected_command_name = await self.llm.select_command(
-            event.description, command_descriptions
+            event.user_request, command_descriptions
         )
 
         # Get the selected command instance
@@ -39,7 +39,7 @@ class CommandSelectorService:
 
         # Use LLM to generate appropriate arguments
         command_args = await self.llm.generate_command_args(
-            event.description, command.metadata.documentation
+            event.user_request, command.metadata.documentation
         )
 
         return command, command_args

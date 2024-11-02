@@ -47,7 +47,6 @@ async def test_select_and_prepare_command_success(
     event = StandardizedEvent(
         provider="github",
         event_type="push",
-        description="Test event description",
         payload={},
         user_request="Test user request",
         raw_payload={"test": "data"}
@@ -73,7 +72,6 @@ async def test_select_and_prepare_command_no_commands(
     event = StandardizedEvent(
         provider="github",
         event_type="unknown_event",
-        description="Test event description",
         payload={},
         user_request="Test user request",
         raw_payload={"test": "data"}
