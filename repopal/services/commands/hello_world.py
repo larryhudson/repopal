@@ -40,7 +40,7 @@ CMD ["tail", "-f", "/dev/null"]
 
     def get_execution_command(self, args: HelloWorldArgs) -> str:
         """Return the shell command to write hello world"""
-        return '/bin/sh -c \'echo "Hello world" > /workspace/hello.txt && ls -l /workspace/hello.txt && cat /workspace/hello.txt\''
+        return 'echo "Hello world" > hello.txt && ls -l hello.txt && cat hello.txt'
 
     def can_handle_event(self, event_type: str) -> bool:
         return True

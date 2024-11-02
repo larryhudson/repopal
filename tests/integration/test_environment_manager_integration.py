@@ -117,8 +117,10 @@ async def test_hello_world_command(test_repo):
         # Verify file was created with correct content
         hello_file = work_dir / "hello.txt"
         logging.debug(f"hello_file path: {hello_file}")
-        assert hello_file.exists()
-        assert hello_file.read_text().strip() == "Hello world"
+        assert hello_file.exists(), f"File not found at {hello_file}"
+        content = hello_file.read_text().strip()
+        logging.debug(f"File contents: {content}")
+        assert content == "Hello world"
 
         return result
     finally:
