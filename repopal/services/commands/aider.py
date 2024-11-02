@@ -59,3 +59,22 @@ class AiderCommand(Command[AiderArgs]):
     def can_handle_event(self, event_type: str) -> bool:
         # This command can be triggered by various events
         return True
+
+    @property
+    def dockerfile(self) -> str:
+        return """FROM python:3.11-slim
+
+# Install git and required system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Aider
+RUN pip install --no-cache-dir aider-chat
+
+# Set working directory
+WORKDIR /workspace
+
+# Default command (can be overridden)
+CMD ["bash"]
+"""
