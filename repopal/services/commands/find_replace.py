@@ -32,8 +32,7 @@ class FindReplaceCommand(Command[FindReplaceArgs]):
 
             Optional arguments:
             - file_pattern: Glob pattern for files to process (default: *)
-            """,
-            command_type=CommandType.FIND_REPLACE
+            """
         )
 
     async def execute(self, args: FindReplaceArgs) -> CommandResult:

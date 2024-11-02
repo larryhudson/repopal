@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from repopal.schemas.command import CommandMetadata, CommandType
+from repopal.schemas.command import CommandMetadata
 from repopal.schemas.webhook import StandardizedEvent
 from repopal.services.command_selector import CommandSelectorService
 
@@ -13,8 +13,7 @@ class MockCommand:
         self.metadata = CommandMetadata(
             name=name,
             description=description,
-            documentation="Test command documentation",
-            command_type=CommandType.FIND_REPLACE,  # Using correct enum value
+            documentation="Test command documentation"
         )
 
 

@@ -26,8 +26,7 @@ class AiderCommand(Command[AiderArgs]):
             Required arguments:
             - prompt: The instruction for Aider
             - working_dir: The repository directory to work in
-            """,
-            command_type=CommandType.AIDER
+            """
         )
 
     async def execute(self, args: AiderArgs) -> CommandResult:
