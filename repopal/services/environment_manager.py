@@ -85,10 +85,24 @@ class EnvironmentManager:
             )
             self.setup_container(command, config.environment_vars)
 
-            # Execute the command
-            result = await command.execute(args, self)
-
-            return result
+            # Get the command to execute
+            shell_command = command.get_execution_command(args)
+            
+            # Execute in container
+            exit_code, output = self.run_in_container(shell_command)
+            
+            if exit_code == 0:
+                return CommandResult(
+                    success=True,
+                    message=f"Command {command.metadata.name} completed successfully",
+                    data={"output": output if output else "No output"}
+                )
+            else:
+                return CommandResult(
+                    success=False,
+                    message=f"Command failed with exit code {exit_code}",
+                    data={"error": output}
+                )
         except Exception as e:
             return CommandResult(
                 success=False,

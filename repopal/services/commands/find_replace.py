@@ -41,32 +41,9 @@ RUN apt-get update && apt-get install -y findutils sed
             """,
         )
 
-    async def execute(self, args: FindReplaceArgs, env_manager: 'EnvironmentManager') -> CommandResult:
-        try:
-            # Construct the find and replace command
-            command = f"find . -type f -name '{args.file_pattern}' -exec sed -i 's/{args.find_pattern}/{args.replace_text}/g' {{}} +"
-            
-            # Execute in container
-            exit_code, output = env_manager.run_in_container(command)
-            
-            if exit_code == 0:
-                return CommandResult(
-                    success=True,
-                    message="Find and replace completed successfully",
-                    data={"output": output if output else "No output"}
-                )
-            else:
-                return CommandResult(
-                    success=False,
-                    message=f"Find and replace failed with exit code {exit_code}",
-                    data={"error": output}
-                )
-        except Exception as e:
-            return CommandResult(
-                success=False,
-                message=f"Find and replace failed: {str(e)}",
-                data={"error": str(e)}
-            )
+    def get_execution_command(self, args: FindReplaceArgs) -> str:
+        """Return the shell command to execute the find and replace operation"""
+        return f"find . -type f -name '{args.file_pattern}' -exec sed -i 's/{args.find_pattern}/{args.replace_text}/g' {{}} +"
 
     def can_handle_event(self, event_type: str) -> bool:
         # This command can be triggered by various events

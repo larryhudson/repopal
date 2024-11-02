@@ -19,16 +19,6 @@ class Command(Generic[TArgs], ABC):
         """
         pass
 
-    @abstractmethod
-    async def execute(self, args: TArgs) -> CommandResult:
-        """Execute the command with the given arguments"""
-        pass
-
-    @abstractmethod
-    def can_handle_event(self, event_type: str) -> bool:
-        """Determine if this command can handle the given event type"""
-        pass
-
     @property
     @abstractmethod
     def dockerfile(self) -> str:
@@ -36,4 +26,16 @@ class Command(Generic[TArgs], ABC):
         Return the Dockerfile contents for building this command's container.
         Must include all necessary dependencies and setup instructions.
         """
+        pass
+
+    @abstractmethod
+    def get_execution_command(self, args: TArgs) -> str:
+        """
+        Return the shell command to execute in the container
+        """
+        pass
+
+    @abstractmethod
+    def can_handle_event(self, event_type: str) -> bool:
+        """Determine if this command can handle the given event type"""
         pass

@@ -60,7 +60,7 @@ async def test_environment_manager_setup(test_repo):
             file_pattern="*.txt",
             working_dir=str(work_dir)
         )
-        result = await command.execute(args, manager)
+        result = await manager.execute_command(command, args, config)
         
         # Verify command success
         assert result["success"]
