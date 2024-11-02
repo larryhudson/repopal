@@ -34,6 +34,7 @@ class EnvironmentManager:
         if not self.work_dir:
             self.work_dir = Path(tempfile.mkdtemp())
             self.logger.debug(f"Created working directory: {self.work_dir}")
+            self.logger.debug(f"Working directory absolute path: {self.work_dir.absolute()}")
 
         if github_token and "github.com" in repo_url:
             # Insert token into GitHub URL
