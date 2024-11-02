@@ -23,9 +23,9 @@ def test_setup_container(env_manager):
     with patch.object(env_manager, 'work_dir', Path(tempfile.mkdtemp())):
         mock_command = Mock()
         mock_command.dockerfile = "FROM python:3.9"
-        mock_image = Mock()
         mock_container = Mock()
-        
+        mock_image = Mock(id='test-image-id')  # Explicitly set id
+
         env_manager.docker_client.images.build = Mock(return_value=(mock_image, None))
         env_manager.docker_client.containers.run = Mock(return_value=mock_container)
         
@@ -59,7 +59,7 @@ async def test_execute_command(env_manager):
     )
 
     # Mock setup methods
-    env_manager.setup_repository = Mock()
+    env_manager.setup_repository = Mock(return_value=Path("/mock/path"))
     env_manager.setup_container = Mock()
     
     result = await env_manager.execute_command(mock_command, {"arg": "value"}, config)

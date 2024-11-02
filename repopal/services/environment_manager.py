@@ -96,10 +96,11 @@ class EnvironmentManager:
         if not self.container:
             raise ValueError("Container not set up. Call setup_container first.")
 
-        # Wait for container to be running
+        # Wait for container to be ready
         self.container.reload()  # Refresh container state
         if self.container.status != 'running':
-            self.container.wait(condition='running')
+            self.container.wait(condition='not-running')  # Wait until container is done starting up
+            self.container.reload()  # Get updated status
             
         exit_code, output = self.container.exec_run(command)
         return exit_code, output.decode("utf-8")
