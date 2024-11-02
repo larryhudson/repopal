@@ -3,16 +3,18 @@ import subprocess
 
 from pydantic import BaseModel
 
-from repopal.schemas.command import CommandMetadata, CommandResult, CommandType
+from repopal.schemas.command import CommandMetadata, CommandResult
 from repopal.services.commands.base import Command
 
 
 class FindReplaceArgs(BaseModel):
     """Arguments for find and replace operation"""
+
     find_pattern: str
     replace_text: str
     file_pattern: str = "*"  # e.g. "*.py" for Python files
     working_dir: str
+
 
 class FindReplaceCommand(Command[FindReplaceArgs]):
     """Command to perform find and replace operations"""
@@ -32,7 +34,7 @@ class FindReplaceCommand(Command[FindReplaceArgs]):
 
             Optional arguments:
             - file_pattern: Glob pattern for files to process (default: *)
-            """
+            """,
         )
 
     async def execute(self, args: FindReplaceArgs) -> CommandResult:
@@ -46,19 +48,19 @@ class FindReplaceCommand(Command[FindReplaceArgs]):
                 shell=True,
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
 
             return CommandResult(
                 success=True,
                 message="Find and replace completed successfully",
-                data={"output": process.stdout if process.stdout else "No output"}
+                data={"output": process.stdout if process.stdout else "No output"},
             )
         except subprocess.CalledProcessError as e:
             return CommandResult(
                 success=False,
                 message=f"Find and replace failed: {str(e)}",
-                data={"error": e.stderr}
+                data={"error": e.stderr},
             )
 
     def can_handle_event(self, event_type: str) -> bool:
