@@ -31,7 +31,9 @@ class EnvironmentManager:
             branch: The branch to clone (defaults to "main")
             github_token: Optional GitHub token for authentication
         """
-        self.work_dir = Path(tempfile.mkdtemp())
+        if not self.work_dir:
+            self.work_dir = Path(tempfile.mkdtemp())
+            self.logger.debug(f"Created working directory: {self.work_dir}")
 
         if github_token and "github.com" in repo_url:
             # Insert token into GitHub URL
