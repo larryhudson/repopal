@@ -63,8 +63,8 @@ async def test_environment_manager_setup(test_repo):
         result = await manager.execute_command(command, args, config)
         
         # Verify command success
-        assert result["success"]
-        
+        assert result.success
+            
         # Verify file was modified
         modified_content = (work_dir / "test.txt").read_text()
         assert "Hello everyone!" in modified_content
