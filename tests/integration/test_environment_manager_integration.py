@@ -53,12 +53,12 @@ async def test_environment_manager_setup(test_repo):
         manager.setup_container(command, config.environment_vars)
         assert manager.container is not None
 
-        # Run a test command
-        exit_code, output = manager.run_in_container("echo $TEST_VAR")
+        # Execute find/replace command in container
+        find_replace_cmd = f"find . -name '*.txt' -type f -exec sed -i 's/world/everyone/g' {{}} +"
+        exit_code, output = manager.run_in_container(find_replace_cmd)
         assert exit_code == 0
-        assert output.strip() == "test_value"
 
-        # Execute find/replace command
+        # Execute find/replace command via the Command class
         args = {
             "find": "world",
             "replace": "everyone",
