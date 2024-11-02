@@ -102,8 +102,14 @@ async def test_end_to_end_command_execution(test_repo):
         manager.setup_container(command)
         assert manager.container is not None
 
+        # Convert dict args to proper command args object
+        if isinstance(command, FindReplaceCommand):
+            command_args = FindReplaceArgs(**args)
+        else:
+            command_args = args
+
         # Execute the selected command
-        result = await manager.execute_command(command, args, config)
+        result = await manager.execute_command(command, command_args, config)
 
         # Log the result for debugging
         logging.debug(f"Command execution result: {result}")
