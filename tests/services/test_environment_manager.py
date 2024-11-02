@@ -27,15 +27,43 @@ def test_setup_container(env_manager):
         assert env_manager.container == mock_container
         env_manager.docker_client.containers.run.assert_called_once()
 
-def test_execute_command(env_manager):
+@pytest.mark.asyncio
+async def test_execute_command(env_manager):
+    # Mock command
+    mock_command = Mock()
+    mock_command.execute = Mock(
+        return_value=CommandResult(
+            success=True,
+            message="Command executed successfully",
+            data={"result": "test output"}
+        )
+    )
+
+    # Test config
+    config = EnvironmentConfig(
+        repo_url="https://github.com/test/repo.git",
+        docker_image="python:3.9"
+    )
+
+    # Mock setup methods
+    env_manager.setup_repository = Mock()
+    env_manager.setup_container = Mock()
+    
+    result = await env_manager.execute_command(mock_command, {"arg": "value"}, config)
+    
+    assert result.success is True
+    assert result.message == "Command executed successfully"
+    assert result.data == {"result": "test output"}
+
+def test_run_in_container(env_manager):
     mock_container = Mock()
     mock_container.exec_run.return_value = (0, b"command output")
     env_manager.container = mock_container
 
-    result = env_manager.execute_command("echo 'test'")
+    exit_code, output = env_manager.run_in_container("echo 'test'")
     
-    assert result["exit_code"] == 0
-    assert result["output"] == "command output"
+    assert exit_code == 0
+    assert output == "command output"
 
 def test_cleanup(env_manager):
     mock_container = Mock()

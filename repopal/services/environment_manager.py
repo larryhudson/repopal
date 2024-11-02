@@ -3,7 +3,11 @@ import docker
 import tempfile
 import git
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Tuple
+
+from repopal.schemas.command import CommandResult
+from repopal.schemas.environment import EnvironmentConfig
+from repopal.services.commands.base import Command
 
 class EnvironmentManager:
     """Manages Docker environments and Git repositories for command execution"""
@@ -37,16 +41,33 @@ class EnvironmentManager:
             environment=environment or {}
         )
 
-    def execute_command(self, command: str) -> Dict[str, Any]:
-        """Execute a command in the Docker container"""
+    async def execute_command(self, command: Command, args: Dict[str, Any], config: EnvironmentConfig) -> CommandResult:
+        """Execute a command in a configured environment"""
+        try:
+            # Set up the environment
+            self.setup_repository(config.repo_url, config.branch)
+            self.setup_container(config.docker_image, config.environment_vars)
+
+            # Execute the command
+            result = await command.execute(args, self)
+            
+            return result
+        except Exception as e:
+            return CommandResult(
+                success=False,
+                message=f"Failed to execute command: {str(e)}",
+                data={"error": str(e)}
+            )
+        finally:
+            self.cleanup()
+
+    def run_in_container(self, command: str) -> Tuple[int, str]:
+        """Execute a raw command in the Docker container"""
         if not self.container:
             raise ValueError("Container not set up. Call setup_container first.")
 
         exit_code, output = self.container.exec_run(command)
-        return {
-            "exit_code": exit_code,
-            "output": output.decode('utf-8')
-        }
+        return exit_code, output.decode('utf-8')
 
     def cleanup(self) -> None:
         """Clean up resources - stop container and remove working directory"""
