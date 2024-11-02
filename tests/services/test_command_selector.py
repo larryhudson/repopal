@@ -49,6 +49,8 @@ async def test_select_and_prepare_command_success(
         event_type="push",
         description="Test event description",
         payload={},
+        user_request="Test user request",
+        raw_payload={"test": "data"}
     )
 
     # Act
@@ -73,6 +75,8 @@ async def test_select_and_prepare_command_no_commands(
         event_type="unknown_event",
         description="Test event description",
         payload={},
+        user_request="Test user request",
+        raw_payload={"test": "data"}
     )
     mock_command_factory.get_commands_for_event.return_value = []
 
