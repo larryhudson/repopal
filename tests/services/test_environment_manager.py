@@ -93,6 +93,7 @@ import os
 import pytest
 from pathlib import Path
 from typing import Dict, Any
+from repopal.schemas.command import CommandMetadata
 
 from repopal.schemas.environment import EnvironmentConfig
 from repopal.services.environment_manager import EnvironmentManager
