@@ -28,3 +28,12 @@ class Command(Generic[TArgs], ABC):
     def can_handle_event(self, event_type: str) -> bool:
         """Determine if this command can handle the given event type"""
         pass
+
+    @property
+    @abstractmethod
+    def dockerfile(self) -> str:
+        """
+        Return the Dockerfile contents for building this command's container.
+        Must include all necessary dependencies and setup instructions.
+        """
+        pass
