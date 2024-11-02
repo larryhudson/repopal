@@ -1,9 +1,10 @@
+from .aider import AiderCommand
 from .base import Command
 from .factory import CommandFactory
-from .github_commands import AiderCommand, FindReplaceCommand
+from .find_replace import FindReplaceCommand
 
 # Register all commands
 CommandFactory.register(AiderCommand)
 CommandFactory.register(FindReplaceCommand)
 
-__all__ = ['Command', 'CommandFactory', 'AiderCommand', 'FindReplaceCommand']
+__all__ = ["Command", "CommandFactory", "AiderCommand", "FindReplaceCommand"]
