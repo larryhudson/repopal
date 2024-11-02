@@ -7,41 +7,41 @@ class LLMService:
         self.model = f"{settings.LLM_PROVIDER}/{settings.LLM_MODEL}"
         self.api_key = settings.LLM_API_KEY
 
+    async def get_completion(self, system_prompt: str, user_prompt: str) -> str:
+        """
+        Get a completion from the LLM using the specified prompts.
+        """
+        response = await acompletion(
+            model=self.model,
+            api_key=self.api_key,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+        )
+        return response.choices[0].message.content.strip()
+
     async def select_command(self, user_request: str, available_commands: List[Dict[str, str]]) -> str:
         """
         Select the most appropriate command based on the user's request.
         """
         prompt = self._build_command_selection_prompt(user_request, available_commands)
+        system_prompt = "You are a helpful assistant that selects the most appropriate command based on user requests."
         
-        response = await acompletion(
-            model=self.model,
-            api_key=self.api_key,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that selects the most appropriate command based on user requests."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        
-        return response.choices[0].message.content.strip()
+        return await self.get_completion(system_prompt, prompt)
 
     async def generate_command_args(self, user_request: str, command_docs: str) -> Dict[str, Any]:
         """
         Generate appropriate arguments for a command based on the user's request.
         """
         prompt = self._build_args_generation_prompt(user_request, command_docs)
+        system_prompt = "You are a helpful assistant that generates command arguments based on user requests."
         
-        response = await acompletion(
-            model=self.model,
-            api_key=self.api_key,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that generates command arguments based on user requests."},
-                {"role": "user", "content": prompt}
-            ]
-        )
+        response = await self.get_completion(system_prompt, prompt)
         
         # Parse the response into a dictionary of arguments
         try:
-            return eval(response.choices[0].message.content.strip())
+            return eval(response)
         except Exception:
             return {}
 
