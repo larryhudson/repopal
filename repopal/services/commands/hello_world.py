@@ -34,7 +34,7 @@ CMD ["tail", "-f", "/dev/null"]
 
     def get_execution_command(self, args: HelloWorldArgs) -> str:
         """Return the shell command to write hello world"""
-        return 'echo "Hello world" > hello.txt'
+        return '/bin/sh -c \'echo "Hello world" > hello.txt\''
 
     def can_handle_event(self, event_type: str) -> bool:
         return True
