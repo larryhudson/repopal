@@ -23,7 +23,6 @@ class FindReplaceCommand(Command[FindReplaceArgs]):
 FROM python:3.9-slim
 WORKDIR /workspace
 RUN apt-get update && apt-get install -y findutils sed
-CMD ["bash"]
 """
 
     @property

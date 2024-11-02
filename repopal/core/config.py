@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import Optional
 
 from pydantic_settings import BaseSettings
 
@@ -9,11 +8,11 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./test.db"  # Default for testing
     REDIS_URL: str = "redis://localhost:6379"  # Default for testing
     TESTING: bool = False
-    
+
     # LLM Settings
-    LLM_MODEL: str = "gpt-4"  # Default model
+    LLM_MODEL: str = "claude-3-haiku-20240307"  # Default model
     LLM_API_KEY: str = ""     # API key for the model provider
-    LLM_PROVIDER: str = "openai"  # Provider (openai, azure, anthropic, etc)
+    LLM_PROVIDER: str = "anthropic"  # Provider (openai, azure, anthropic, etc)
 
     model_config = {
         "env_file": ".env"

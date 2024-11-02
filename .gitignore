@@ -2,3 +2,4 @@ venv
 .aider*
 .env
 __pycache__
+.pyrightconfig.json

@@ -36,3 +36,11 @@ def client(db):
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     del app.dependency_overrides[get_db]
+
+
+def pytest_configure(config):
+    """Register the 'integration' marker"""
+    config.addinivalue_line(
+        "markers",
+        "integration: mark test as integration test that uses real external services",
+    )

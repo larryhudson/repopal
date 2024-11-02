@@ -1,9 +1,11 @@
+import logging
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import docker
 import git
+from docker.models.containers import Container
 
 from repopal.schemas.command import CommandResult
 from repopal.schemas.environment import EnvironmentConfig
@@ -16,24 +18,29 @@ class EnvironmentManager:
     def __init__(self):
         self.docker_client = docker.from_env()
         self.work_dir: Optional[Path] = None
-        self.container = None
+        self.container: Container | None = None
+        self.logger = logging.getLogger(__name__)
 
-    def setup_repository(self, repo_url: str, branch: str = "main", github_token: Optional[str] = None) -> Path:
+    def setup_repository(
+        self, repo_url: str, branch: str = "main", github_token: Optional[str] = None
+    ) -> Path:
         """Clone a repository into a temporary working directory
-        
+
         Args:
             repo_url: The URL of the repository to clone
             branch: The branch to clone (defaults to "main")
             github_token: Optional GitHub token for authentication
         """
         self.work_dir = Path(tempfile.mkdtemp())
-        
+
         if github_token and "github.com" in repo_url:
             # Insert token into GitHub URL
             url_parts = repo_url.split("://")
             if len(url_parts) == 2:
-                repo_url = f"{url_parts[0]}://x-access-token:{github_token}@{url_parts[1]}"
-        
+                repo_url = (
+                    f"{url_parts[0]}://x-access-token:{github_token}@{url_parts[1]}"
+                )
+
         git.Repo.clone_from(repo_url, self.work_dir, branch=branch)
         return self.work_dir
 
@@ -74,7 +81,7 @@ class EnvironmentManager:
             self.setup_repository(
                 config.repo_url,
                 config.branch,
-                github_token=config.environment_vars.get("GITHUB_TOKEN")
+                github_token=config.environment_vars.get("GITHUB_TOKEN"),
             )
             self.setup_container(command, config.environment_vars)
 
@@ -98,10 +105,10 @@ class EnvironmentManager:
 
         # Wait for container to be ready
         self.container.reload()  # Refresh container state
-        if self.container.status != 'running':
-            self.container.wait(condition='not-running')  # Wait until container is done starting up
-            self.container.reload()  # Get updated status
-            
+        self.logger.info(f"Container status: {self.container.status}")
+        if self.container.status != "running":
+            self.container.start()
+
         exit_code, output = self.container.exec_run(command)
         return exit_code, output.decode("utf-8")
 
