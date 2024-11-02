@@ -19,8 +19,18 @@ class FindReplaceCommand(Command[FindReplaceArgs]):
 
     dockerfile = """
 FROM python:3.9-slim
+
+# Install required tools
+RUN apt-get update && \
+    apt-get install -y \
+    findutils \
+    sed \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /workspace
-RUN apt-get update && apt-get install -y findutils sed
+
+# Keep container running
+CMD ["tail", "-f", "/dev/null"]
 """
 
     @property
