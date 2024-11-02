@@ -1,7 +1,7 @@
 import pytest
 
 from repopal.schemas.environment import EnvironmentConfig
-from repopal.services.commands.find_replace import FindReplaceCommand, FindReplaceArgs
+from repopal.services.commands.find_replace import FindReplaceArgs, FindReplaceCommand
 from repopal.services.environment_manager import EnvironmentManager
 
 pytestmark = pytest.mark.integration
@@ -58,13 +58,13 @@ async def test_environment_manager_setup(test_repo):
             find_pattern="world",
             replace_text="everyone",
             file_pattern="*.txt",
-            working_dir=str(work_dir)
+            working_dir=str(work_dir),
         )
         result = await manager.execute_command(command, args, config)
-        
+
         # Verify command success
         assert result.success
-            
+
         # Verify file was modified
         modified_content = (work_dir / "test.txt").read_text()
         assert "Hello everyone!" in modified_content
