@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import patch
 
 import pytest
@@ -21,8 +22,13 @@ class MockCommand:
 def service():
     with patch("repopal.services.llm.LLMService") as mock_class:
         instance = mock_class.return_value
+        # Mock async methods
         instance.select_command.return_value = "test_command"
-        instance.generate_command_args.return_value = {"arg1": "value1"}
+        instance.select_command.return_value = asyncio.Future()
+        instance.select_command.return_value.set_result("test_command")
+        
+        instance.generate_command_args.return_value = asyncio.Future()
+        instance.generate_command_args.return_value.set_result({"arg1": "value1"})
         service = CommandSelectorService()
         service.llm = instance  # Explicitly set the mock instance
         yield service, instance
