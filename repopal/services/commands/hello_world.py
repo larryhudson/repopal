@@ -5,7 +5,7 @@ from repopal.services.commands.base import Command
 
 class HelloWorldArgs(BaseModel):
     """Arguments for hello world operation"""
-    working_dir: str
+    pass
 
 
 class HelloWorldCommand(Command[HelloWorldArgs]):

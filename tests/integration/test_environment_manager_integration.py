@@ -105,7 +105,7 @@ async def test_hello_world_command(test_repo):
         assert manager.container is not None
 
         # Execute hello world command
-        args = HelloWorldArgs(working_dir=str(work_dir))
+        args = HelloWorldArgs()
         result = await manager.execute_command(command, args, config)
 
         # Log the result for debugging
