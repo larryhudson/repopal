@@ -3,6 +3,7 @@ import logging
 
 from repopal.schemas.environment import EnvironmentConfig
 from repopal.services.commands.find_replace import FindReplaceArgs, FindReplaceCommand
+from repopal.services.commands.hello_world import HelloWorldArgs, HelloWorldCommand
 from repopal.services.environment_manager import EnvironmentManager
 
 pytestmark = pytest.mark.integration
@@ -73,6 +74,46 @@ async def test_environment_manager_setup(test_repo):
         modified_content = (work_dir / "test.txt").read_text()
         assert "Hello everyone!" in modified_content
         assert "world" not in modified_content
+
+    finally:
+        manager.cleanup()
+
+
+@pytest.mark.asyncio
+async def test_hello_world_command(test_repo):
+    """Test that hello world command works correctly"""
+    manager = EnvironmentManager()
+    command = HelloWorldCommand()
+
+    config = EnvironmentConfig(
+        repo_url=str(test_repo),
+        branch="main",
+        environment_vars={},
+    )
+
+    try:
+        # Set up repository
+        work_dir = manager.setup_repository(config.repo_url, config.branch)
+        assert work_dir.exists()
+
+        # Set up container
+        manager.setup_container(command)
+        assert manager.container is not None
+
+        # Execute hello world command
+        args = HelloWorldArgs(working_dir=str(work_dir))
+        result = await manager.execute_command(command, args, config)
+
+        # Log the result for debugging
+        logging.debug(f"Command execution result: {result}")
+
+        # Verify command success
+        assert result.success
+
+        # Verify file was created with correct content
+        hello_file = work_dir / "hello.txt"
+        assert hello_file.exists()
+        assert hello_file.read_text().strip() == "Hello world"
 
     finally:
         manager.cleanup()
