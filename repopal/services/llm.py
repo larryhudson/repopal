@@ -1,3 +1,4 @@
+import re
 from typing import Any, Dict, List
 
 from litellm import acompletion
@@ -22,7 +23,8 @@ class LLMService:
                 {"role": "user", "content": user_prompt},
             ],
         )
-        return response.choices[0].message.content.strip()
+        completion = response.choices[0].message.content.strip()
+        return self._extract_answer(completion)
 
     async def select_command(
         self, user_request: str, available_commands: List[Dict[str, str]]
@@ -33,7 +35,8 @@ class LLMService:
         prompt = self._build_command_selection_prompt(user_request, available_commands)
         system_prompt = "You are a helpful assistant that selects the most appropriate command based on user requests."
 
-        return await self.get_completion(system_prompt, prompt)
+        response = await self.get_completion(system_prompt, prompt)
+        return response
 
     async def generate_command_args(
         self, user_request: str, command_docs: str
@@ -45,7 +48,7 @@ class LLMService:
         system_prompt = "You are a helpful assistant that generates command arguments based on user requests."
 
         response = await self.get_completion(system_prompt, prompt)
-
+        
         # Parse the response into a dictionary of arguments
         try:
             return eval(response)
@@ -88,3 +91,10 @@ Write out your reasoning between <reasoning></reasoning> tags.
 
 Then return only the dictionary in a format that can be evaluated using Python's eval() in <answer></answer> tags.
 """
+
+    def _extract_answer(self, text: str) -> str:
+        """Extract the content between <answer></answer> tags."""
+        match = re.search(r'<answer>(.*?)</answer>', text, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        return text  # Return original text if no tags found
