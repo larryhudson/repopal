@@ -25,6 +25,7 @@ RUN apt-get update && \
     apt-get install -y \
     findutils \
     sed \
+    bash \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
@@ -57,8 +58,9 @@ CMD ["tail", "-f", "/dev/null"]
         find_pattern = args.find_pattern.replace("/", "\\/")
         replace_text = args.replace_text.replace("/", "\\/")
         
-        # Use set -e to fail on errors, add echo to verify changes
-        return f"set -e && find . -type f -name '{args.file_pattern}' -exec sed -i 's/{find_pattern}/{replace_text}/g' {{}} + && echo 'Replacement complete' && cat {args.file_pattern}"
+        # Wrap command in /bin/sh -c to ensure shell features work
+        command = f"find . -type f -name '{args.file_pattern}' -exec sed -i 's/{find_pattern}/{replace_text}/g' {{}} + && echo 'Replacement complete' && cat {args.file_pattern}"
+        return f"/bin/sh -c '{command}'"
 
     def can_handle_event(self, event_type: str) -> bool:
         # This command can be triggered by various events
