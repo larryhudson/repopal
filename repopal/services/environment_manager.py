@@ -23,30 +23,43 @@ class EnvironmentManager:
         git.Repo.clone_from(repo_url, self.work_dir, branch=branch)
         return self.work_dir
 
-    def setup_container(self, image: str, environment: Dict[str, str] = None) -> None:
+    def setup_container(self, command: Command, environment: Dict[str, str] = None) -> None:
         """Create and start a Docker container with the working directory mounted"""
         if not self.work_dir:
             raise ValueError("Working directory not set up. Call setup_repository first.")
 
-        self.container = self.docker_client.containers.run(
-            image,
-            detach=True,
-            volumes={
-                str(self.work_dir): {
-                    'bind': '/workspace',
-                    'mode': 'rw'
-                }
-            },
-            working_dir='/workspace',
-            environment=environment or {}
-        )
+        # Create a temporary directory for the Dockerfile
+        with tempfile.TemporaryDirectory() as docker_build_dir:
+            dockerfile_path = Path(docker_build_dir) / "Dockerfile"
+            dockerfile_path.write_text(command.dockerfile)
+            
+            # Build the image
+            image, _ = self.docker_client.images.build(
+                path=str(docker_build_dir),
+                rm=True,
+                forcerm=True
+            )
+
+            # Run the container
+            self.container = self.docker_client.containers.run(
+                image.id,
+                detach=True,
+                volumes={
+                    str(self.work_dir): {
+                        'bind': '/workspace',
+                        'mode': 'rw'
+                    }
+                },
+                working_dir='/workspace',
+                environment=environment or {}
+            )
 
     async def execute_command(self, command: Command, args: Dict[str, Any], config: EnvironmentConfig) -> CommandResult:
         """Execute a command in a configured environment"""
         try:
             # Set up the environment
             self.setup_repository(config.repo_url, config.branch)
-            self.setup_container(config.docker_image, config.environment_vars)
+            self.setup_container(command, config.environment_vars)
 
             # Execute the command
             result = await command.execute(args, self)

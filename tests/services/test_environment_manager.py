@@ -21,13 +21,25 @@ def test_setup_repository(env_manager):
 
 def test_setup_container(env_manager):
     with patch.object(env_manager, 'work_dir', Path(tempfile.mkdtemp())):
+        mock_command = Mock()
+        mock_command.dockerfile = "FROM python:3.9"
+        mock_image = Mock()
         mock_container = Mock()
+        
+        env_manager.docker_client.images.build = Mock(return_value=(mock_image, None))
         env_manager.docker_client.containers.run = Mock(return_value=mock_container)
         
-        env_manager.setup_container("python:3.9")
+        env_manager.setup_container(mock_command)
         
         assert env_manager.container == mock_container
-        env_manager.docker_client.containers.run.assert_called_once()
+        env_manager.docker_client.images.build.assert_called_once()
+        env_manager.docker_client.containers.run.assert_called_once_with(
+            mock_image.id,
+            detach=True,
+            volumes={str(env_manager.work_dir): {'bind': '/workspace', 'mode': 'rw'}},
+            working_dir='/workspace',
+            environment={}
+        )
 
 @pytest.mark.asyncio
 async def test_execute_command(env_manager):
@@ -43,8 +55,7 @@ async def test_execute_command(env_manager):
 
     # Test config
     config = EnvironmentConfig(
-        repo_url="https://github.com/test/repo.git",
-        docker_image="python:3.9"
+        repo_url="https://github.com/test/repo.git"
     )
 
     # Mock setup methods
