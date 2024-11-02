@@ -67,16 +67,19 @@ async def test_environment_manager_setup(test_repo):
         # Log the result for debugging
         logging.debug(f"Command execution result: {result}")
 
-        # Verify command success
+        # Verify command success and check file contents
         assert result.success
-
+        
         # Verify file was modified
         modified_content = (work_dir / "test.txt").read_text()
         assert "Hello everyone!" in modified_content
         assert "world" not in modified_content
-
+        
+        return result
     finally:
-        manager.cleanup()
+        # Only cleanup after we've verified the results
+        if 'modified_content' in locals():
+            manager.cleanup()
 
 
 @pytest.mark.asyncio
@@ -107,13 +110,16 @@ async def test_hello_world_command(test_repo):
         # Log the result for debugging
         logging.debug(f"Command execution result: {result}")
 
-        # Verify command success
+        # Verify command success and check file contents
         assert result.success
 
         # Verify file was created with correct content
         hello_file = work_dir / "hello.txt"
         assert hello_file.exists()
         assert hello_file.read_text().strip() == "Hello world"
-
+        
+        return result
     finally:
-        manager.cleanup()
+        # Only cleanup after we've verified the results
+        if hello_file.exists():
+            manager.cleanup()
