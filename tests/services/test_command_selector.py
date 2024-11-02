@@ -18,12 +18,13 @@ class MockCommand:
 
 
 @pytest.fixture
-def mock_llm_service():
-    with patch("repopal.services.command_selector.LLMService") as mock:
-        instance = mock.return_value
+def service():
+    with patch("repopal.services.llm.LLMService") as mock_class:
+        instance = mock_class.return_value
         instance.select_command.return_value = "test_command"
         instance.generate_command_args.return_value = {"arg1": "value1"}
-        yield instance
+        service = CommandSelectorService()
+        yield service, instance
 
 
 @pytest.fixture
@@ -35,14 +36,10 @@ def mock_command_factory():
         yield mock
 
 
-@pytest.fixture
-def service():
-    return CommandSelectorService()
-
-
 async def test_select_and_prepare_command_success(
-    service, mock_llm_service, mock_command_factory
+    service, mock_command_factory
 ):
+    service_instance, mock_llm = service
     # Arrange
     event = StandardizedEvent(
         provider="github",
@@ -53,21 +50,22 @@ async def test_select_and_prepare_command_success(
     )
 
     # Act
-    command, args = await service.select_and_prepare_command(event)
+    command, args = await service_instance.select_and_prepare_command(event)
 
     # Assert
     mock_command_factory.get_commands_for_event.assert_called_once_with(
         event.event_type
     )
-    mock_llm_service.select_command.assert_called_once()
-    mock_llm_service.generate_command_args.assert_called_once()
+    mock_llm.select_command.assert_called_once()
+    mock_llm.generate_command_args.assert_called_once()
     assert isinstance(command, MockCommand)
     assert args == {"arg1": "value1"}
 
 
 async def test_select_and_prepare_command_no_commands(
-    service, mock_llm_service, mock_command_factory
+    service, mock_command_factory
 ):
+    service_instance, _ = service
     # Arrange
     event = StandardizedEvent(
         provider="github",
@@ -80,7 +78,7 @@ async def test_select_and_prepare_command_no_commands(
 
     # Act & Assert
     with pytest.raises(ValueError, match="No commands available for this event type"):
-        await service.select_and_prepare_command(event)
+        await service_instance.select_and_prepare_command(event)
 
 
 pytestmark = pytest.mark.asyncio
