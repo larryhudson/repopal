@@ -57,9 +57,15 @@ async def test_command_selector_with_real_llm():
 @pytest.mark.asyncio
 async def test_end_to_end_command_execution(test_repo):
     """Integration test that combines command selection and execution in container"""
-    # Setup services
-    selector = CommandSelectorService()
-    manager = EnvironmentManager()
+    import asyncio
+    # Create new event loop for this test
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        # Setup services
+        selector = CommandSelectorService()
+        manager = EnvironmentManager()
 
     # Create a test event for a simple find/replace operation
     event = StandardizedEvent(
@@ -114,3 +120,5 @@ async def test_end_to_end_command_execution(test_repo):
 
     finally:
         manager.cleanup()
+        # Clean up the event loop
+        loop.close()
