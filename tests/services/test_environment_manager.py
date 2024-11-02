@@ -3,6 +3,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
 from repopal.services.environment_manager import EnvironmentManager
+from repopal.schemas.command import CommandResult
+from repopal.schemas.environment import EnvironmentConfig
 
 @pytest.fixture
 def env_manager():
