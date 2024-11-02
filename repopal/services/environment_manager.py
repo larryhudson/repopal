@@ -81,13 +81,8 @@ class EnvironmentManager:
     ) -> CommandResult:
         """Execute a command in a configured environment"""
         try:
-            # Set up the environment
-            self.setup_repository(
-                config.repo_url,
-                config.branch,
-                github_token=config.environment_vars.get("GITHUB_TOKEN"),
-            )
-            self.setup_container(command, config.environment_vars)
+            if not self.container:
+                self.setup_container(command, config.environment_vars)
 
             # Get the command to execute
             shell_command = command.get_execution_command(args)
