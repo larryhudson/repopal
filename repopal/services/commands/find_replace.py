@@ -59,8 +59,7 @@ CMD ["tail", "-f", "/dev/null"]
         replace_text = args.replace_text.replace("/", "\\/")
         
         # Wrap command in /bin/sh -c to ensure shell features work
-        command = f"/bin/sh -c \"find . -type f -name '{args.file_pattern}' -exec sed -i '' 's/{find_pattern}/{replace_text}/g' {{}} \\; && echo 'Replacement complete'\""
-        return f"/bin/sh -c '{command}'"
+        return f"/bin/sh -c \"find . -type f -name '{args.file_pattern}' -exec sed -i '' 's/{find_pattern}/{replace_text}/g' {{}} \\; && echo 'Replacement complete'\""
 
     def can_handle_event(self, event_type: str) -> bool:
         # This command can be triggered by various events
