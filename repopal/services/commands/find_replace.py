@@ -19,6 +19,13 @@ class FindReplaceArgs(BaseModel):
 class FindReplaceCommand(Command[FindReplaceArgs]):
     """Command to perform find and replace operations"""
 
+    dockerfile = """
+FROM python:3.9-slim
+WORKDIR /workspace
+RUN apt-get update && apt-get install -y findutils sed
+CMD ["bash"]
+"""
+
     @property
     def metadata(self) -> CommandMetadata:
         return CommandMetadata(
