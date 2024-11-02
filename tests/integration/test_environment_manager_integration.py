@@ -1,7 +1,7 @@
 import pytest
 
 from repopal.schemas.environment import EnvironmentConfig
-from repopal.services.commands.find_replace import FindReplaceCommand
+from repopal.services.commands.find_replace import FindReplaceCommand, FindReplaceArgs
 from repopal.services.environment_manager import EnvironmentManager
 
 pytestmark = pytest.mark.integration

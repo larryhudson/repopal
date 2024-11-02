@@ -1,7 +1,5 @@
-import os
-import subprocess
-
 from pydantic import BaseModel
+from repopal.services.environment_manager import EnvironmentManager
 
 from repopal.schemas.command import CommandMetadata, CommandResult
 from repopal.services.commands.base import Command
