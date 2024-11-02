@@ -70,7 +70,7 @@ class EnvironmentManager:
                 volumes={str(self.work_dir): {"bind": "/workspace", "mode": "rw"}},
                 working_dir="/workspace",
                 environment=environment or {},
-                user="1000:1000"  # Run as non-root user
+                user="1000:1000",  # Run as non-root user
             )
 
     async def execute_command(
@@ -110,8 +110,6 @@ class EnvironmentManager:
                 message=f"Failed to execute command: {str(e)}",
                 data={"error": str(e)},
             )
-        finally:
-            pass
 
     def run_in_container(self, command: str) -> Tuple[int, str]:
         """Execute a raw command in the Docker container"""
