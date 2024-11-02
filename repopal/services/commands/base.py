@@ -10,7 +10,13 @@ class Command(Generic[TArgs], ABC):
     @property
     @abstractmethod
     def metadata(self) -> CommandMetadata:
-        """Return metadata about the command"""
+        """
+        Return metadata about the command.
+        Should include:
+        - name: str
+        - description: str
+        - documentation: str (detailed usage instructions and examples)
+        """
         pass
 
     @abstractmethod

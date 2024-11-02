@@ -1,0 +1,43 @@
+from typing import Dict, Any
+from repopal.services.llm import LLMService
+from repopal.services.commands.factory import CommandFactory
+from repopal.services.commands.base import Command
+from repopal.schemas.webhook import StandardizedEvent
+
+class CommandSelectorService:
+    def __init__(self):
+        self.llm = LLMService()
+
+    async def select_and_prepare_command(self, event: StandardizedEvent) -> tuple[Command, Dict[str, Any]]:
+        """
+        Select the most appropriate command and prepare its arguments based on the event.
+        Returns a tuple of (command_instance, command_args).
+        """
+        # Get all available commands that can handle this event type
+        available_commands = CommandFactory.get_commands_for_event(event.event_type)
+        
+        # Prepare command descriptions for LLM
+        command_descriptions = [
+            {
+                "name": cmd.metadata.name,
+                "description": cmd.metadata.description
+            }
+            for cmd in available_commands
+        ]
+        
+        # Use LLM to select the best command
+        selected_command_name = await self.llm.select_command(
+            event.description,
+            command_descriptions
+        )
+        
+        # Get the selected command instance
+        command = CommandFactory.get_command(selected_command_name)
+        
+        # Use LLM to generate appropriate arguments
+        command_args = await self.llm.generate_command_args(
+            event.description,
+            command.metadata.documentation
+        )
+        
+        return command, command_args
