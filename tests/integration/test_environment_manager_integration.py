@@ -97,7 +97,7 @@ async def test_hello_world_command(test_repo):
 
     try:
         # Execute hello world command - this will handle setup
-        args = HelloWorldArgs(working_dir=str(work_dir))
+        args = HelloWorldArgs(working_dir=str(test_repo))
         result = await manager.execute_command(command, args, config)
 
         # Log the result for debugging
@@ -107,7 +107,7 @@ async def test_hello_world_command(test_repo):
         assert result.success
 
         # Verify file was created with correct content
-        hello_file = work_dir / "hello.txt"
+        hello_file = test_repo / "hello.txt"
         logging.debug(f"hello_file path: {hello_file}")
         assert hello_file.exists(), f"File not found at {hello_file}"
         content = hello_file.read_text().strip()
