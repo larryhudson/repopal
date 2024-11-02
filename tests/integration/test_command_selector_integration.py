@@ -1,7 +1,8 @@
 import pytest
 import logging
-
+from git import Repo
 from repopal.schemas.webhook import StandardizedEvent, WebhookProvider
+from tests.integration.test_environment_manager_integration import test_repo
 from repopal.schemas.environment import EnvironmentConfig
 from repopal.services.command_selector import CommandSelectorService
 from repopal.services.environment_manager import EnvironmentManager
