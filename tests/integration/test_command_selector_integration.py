@@ -69,22 +69,21 @@ async def test_end_to_end_command_execution(test_repo):
 
         # Create a test event for a simple find/replace operation
         event = StandardizedEvent(
-        provider=WebhookProvider.GITHUB,
-        event_type="issue",
-        action="opened",
-        user_request="Please replace all occurrences of 'world' with 'everyone' in test.txt",
-        payload={
-            "repository": "test-repo",
-            "branch": "main",
-            "files_changed": ["test.txt"],
-        },
-        raw_payload={
-            "repository": {"full_name": "test-repo"},
-            "issue": {"number": 1},
-        },
-    )
+            provider=WebhookProvider.GITHUB,
+            event_type="issue",
+            action="opened",
+            user_request="Please replace all occurrences of 'world' with 'everyone' in test.txt",
+            payload={
+                "repository": "test-repo",
+                "branch": "main",
+                "files_changed": ["test.txt"],
+            },
+            raw_payload={
+                "repository": {"full_name": "test-repo"},
+                "issue": {"number": 1},
+            },
+        )
 
-    try:
         # Select command and generate arguments
         command, args = await selector.select_and_prepare_command(event)
         assert command is not None, "Should select a command"
