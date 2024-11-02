@@ -1,4 +1,5 @@
 import pytest
+import logging
 
 from repopal.schemas.environment import EnvironmentConfig
 from repopal.services.commands.find_replace import FindReplaceArgs, FindReplaceCommand
@@ -61,6 +62,9 @@ async def test_environment_manager_setup(test_repo):
             working_dir=str(work_dir),
         )
         result = await manager.execute_command(command, args, config)
+
+        # Log the result for debugging
+        logging.debug(f"Command execution result: {result}")
 
         # Verify command success
         assert result.success
