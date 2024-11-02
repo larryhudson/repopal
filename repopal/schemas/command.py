@@ -4,9 +4,9 @@ from pydantic import BaseModel
 
 class CommandType(str, Enum):
     """Types of commands that can be executed"""
-    GITHUB_PR = "github_pr"
-    GITHUB_ISSUE = "github_issue"
-    # Add more command types as needed
+    AIDER = "aider"
+    FIND_REPLACE = "find_replace"
+    SHELL = "shell"
 
 class CommandMetadata(BaseModel):
     """Metadata about a command"""

@@ -1,49 +1,118 @@
+import os
+import subprocess
 from typing import Dict, Any
 from pydantic import BaseModel
 
 from repopal.services.commands.base import Command
 from repopal.schemas.command import CommandMetadata, CommandResult, CommandType
 
-class CreatePRArgs(BaseModel):
-    """Arguments for creating a PR"""
-    title: str
-    branch: str
-    base: str = "main"
-    body: str = ""
-    repository: str
+class AiderArgs(BaseModel):
+    """Arguments for running Aider"""
+    prompt: str
+    working_dir: str
 
-class CreatePRCommand(Command[CreatePRArgs]):
-    """Command to create a GitHub Pull Request"""
+class FindReplaceArgs(BaseModel):
+    """Arguments for find and replace operation"""
+    find_pattern: str
+    replace_text: str
+    file_pattern: str = "*"  # e.g. "*.py" for Python files
+    working_dir: str
+
+class AiderCommand(Command[AiderArgs]):
+    """Command to run Aider AI assistant"""
 
     @property
     def metadata(self) -> CommandMetadata:
         return CommandMetadata(
-            name="create_pr",
-            description="Creates a new Pull Request on GitHub",
+            name="aider",
+            description="Run Aider AI assistant with a prompt",
             documentation="""
-            Creates a new Pull Request on GitHub with the specified title,
-            source branch, and target branch.
+            Executes the Aider AI assistant in a repository with a specific prompt.
             
             Required arguments:
-            - title: The title of the PR
-            - branch: The source branch
-            - repository: The repository in owner/name format
-            
-            Optional arguments:
-            - base: The target branch (defaults to main)
-            - body: The PR description
+            - prompt: The instruction for Aider
+            - working_dir: The repository directory to work in
             """,
-            command_type=CommandType.GITHUB_PR
+            command_type=CommandType.AIDER
         )
 
-    async def execute(self, args: CreatePRArgs) -> CommandResult:
-        # TODO: Implement actual GitHub API call
-        return CommandResult(
-            success=True,
-            message=f"Created PR: {args.title}",
-            data={"pr_url": f"https://github.com/{args.repository}/pull/1"}
-        )
+    async def execute(self, args: AiderArgs) -> CommandResult:
+        try:
+            # Change to the working directory
+            os.chdir(args.working_dir)
+            
+            # Run Aider with the prompt
+            process = subprocess.run(
+                ["aider", "--no-git", args.prompt],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            return CommandResult(
+                success=True,
+                message="Aider command executed successfully",
+                data={"output": process.stdout}
+            )
+        except subprocess.CalledProcessError as e:
+            return CommandResult(
+                success=False,
+                message=f"Aider command failed: {str(e)}",
+                data={"error": e.stderr}
+            )
 
     def can_handle_event(self, event_type: str) -> bool:
-        # This command can be triggered by push events
-        return event_type == "push"
+        # This command can be triggered by various events
+        return True
+
+class FindReplaceCommand(Command[FindReplaceArgs]):
+    """Command to perform find and replace operations"""
+
+    @property
+    def metadata(self) -> CommandMetadata:
+        return CommandMetadata(
+            name="find_replace",
+            description="Perform find and replace across files",
+            documentation="""
+            Executes a find and replace operation across files in a repository.
+            
+            Required arguments:
+            - find_pattern: Text to find
+            - replace_text: Text to replace with
+            - working_dir: The repository directory to work in
+            
+            Optional arguments:
+            - file_pattern: Glob pattern for files to process (default: *)
+            """,
+            command_type=CommandType.FIND_REPLACE
+        )
+
+    async def execute(self, args: FindReplaceArgs) -> CommandResult:
+        try:
+            # Change to the working directory
+            os.chdir(args.working_dir)
+            
+            # Use find and sed for the operation
+            process = subprocess.run(
+                f"find . -type f -name '{args.file_pattern}' -exec sed -i '' 's/{args.find_pattern}/{args.replace_text}/g' {{}} +",
+                shell=True,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            return CommandResult(
+                success=True,
+                message="Find and replace completed successfully",
+                data={"output": process.stdout if process.stdout else "No output"}
+            )
+        except subprocess.CalledProcessError as e:
+            return CommandResult(
+                success=False,
+                message=f"Find and replace failed: {str(e)}",
+                data={"error": e.stderr}
+            )
+
+    def can_handle_event(self, event_type: str) -> bool:
+        # This command can be triggered by various events
+        return True
