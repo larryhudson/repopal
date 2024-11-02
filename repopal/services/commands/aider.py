@@ -31,6 +31,10 @@ class AiderCommand(Command[AiderArgs]):
             """,
         )
 
+    def get_execution_command(self, args: AiderArgs) -> str:
+        """Return the shell command to execute Aider"""
+        return f"aider --no-git '{args.prompt}'"
+
     async def execute(self, args: AiderArgs) -> CommandResult:
         try:
             # Change to the working directory
