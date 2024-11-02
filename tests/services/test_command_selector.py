@@ -13,7 +13,7 @@ class MockCommand:
             name=name,
             description=description,
             documentation="Test command documentation",
-            command_type=CommandType.find_replace,  # Adding required command_type
+            command_type=CommandType.FIND_REPLACE,  # Using correct enum value
         )
 
 
