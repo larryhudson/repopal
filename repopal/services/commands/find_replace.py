@@ -43,30 +43,31 @@ RUN apt-get update && apt-get install -y findutils sed
             """,
         )
 
-    async def execute(self, args: FindReplaceArgs) -> CommandResult:
+    async def execute(self, args: FindReplaceArgs, env_manager: 'EnvironmentManager') -> CommandResult:
         try:
-            # Change to the working directory
-            os.chdir(args.working_dir)
-
-            # Use find and sed for the operation
-            process = subprocess.run(
-                f"find . -type f -name '{args.file_pattern}' -exec sed -i '' 's/{args.find_pattern}/{args.replace_text}/g' {{}} +",
-                shell=True,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-
-            return CommandResult(
-                success=True,
-                message="Find and replace completed successfully",
-                data={"output": process.stdout if process.stdout else "No output"},
-            )
-        except subprocess.CalledProcessError as e:
+            # Construct the find and replace command
+            command = f"find . -type f -name '{args.file_pattern}' -exec sed -i 's/{args.find_pattern}/{args.replace_text}/g' {{}} +"
+            
+            # Execute in container
+            exit_code, output = env_manager.run_in_container(command)
+            
+            if exit_code == 0:
+                return CommandResult(
+                    success=True,
+                    message="Find and replace completed successfully",
+                    data={"output": output if output else "No output"}
+                )
+            else:
+                return CommandResult(
+                    success=False,
+                    message=f"Find and replace failed with exit code {exit_code}",
+                    data={"error": output}
+                )
+        except Exception as e:
             return CommandResult(
                 success=False,
                 message=f"Find and replace failed: {str(e)}",
-                data={"error": e.stderr},
+                data={"error": str(e)}
             )
 
     def can_handle_event(self, event_type: str) -> bool:
