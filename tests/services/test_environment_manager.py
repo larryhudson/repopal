@@ -93,40 +93,12 @@ import os
 import pytest
 from pathlib import Path
 from typing import Dict, Any
-from repopal.schemas.command import CommandMetadata
+from repopal.services.commands.find_replace import FindReplaceCommand, FindReplaceArgs
 
 from repopal.schemas.environment import EnvironmentConfig
 from repopal.services.environment_manager import EnvironmentManager
 from repopal.services.commands.base import Command
 
-
-class TestCommand(Command):
-    """Test command that just echoes some text"""
-    
-    dockerfile = """
-FROM python:3.9-slim
-WORKDIR /workspace
-CMD ["bash"]
-"""
-
-    @property
-    def metadata(self):
-        return CommandMetadata(
-            name="test_command",
-            description="Test command that echoes text",
-            documentation="A simple test command that echoes text for testing purposes"
-        )
-
-    async def execute(self, args: Dict[str, Any], env_manager) -> Any:
-        exit_code, output = env_manager.run_in_container("echo 'test successful'")
-        return {
-            "success": exit_code == 0,
-            "message": output,
-            "data": {"exit_code": exit_code}
-        }
-
-    def can_handle_event(self, event_type: str) -> bool:
-        return True
 
 
 @pytest.fixture
@@ -155,7 +127,7 @@ def test_repo(tmp_path):
 async def test_environment_manager_setup(test_repo):
     """Test that environment manager can set up a repository and run commands"""
     manager = EnvironmentManager()
-    command = TestCommand()
+    command = FindReplaceCommand()
     
     config = EnvironmentConfig(
         repo_url=str(test_repo),
@@ -178,10 +150,15 @@ async def test_environment_manager_setup(test_repo):
         assert exit_code == 0
         assert output.strip() == "test_value"
         
-        # Execute the command
-        result = await command.execute({}, manager)
-        assert result["success"]
-        assert "test successful" in result["message"]
+        # Execute the find-replace command
+        args = FindReplaceArgs(
+            find_pattern="test content",
+            replace_text="new content",
+            working_dir=str(work_dir)
+        )
+        result = await command.execute(args)
+        assert result.success
+        assert "completed successfully" in result.message
         
     finally:
         manager.cleanup()
