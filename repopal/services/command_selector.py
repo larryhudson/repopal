@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict
 
 from repopal.schemas.webhook import StandardizedEvent
@@ -9,6 +10,7 @@ from repopal.services.llm import LLMService
 class CommandSelectorService:
     def __init__(self):
         self.llm = LLMService()
+        self.logger = logging.getLogger(__name__)
 
     async def select_and_prepare_command(
         self, event: StandardizedEvent
@@ -34,6 +36,7 @@ class CommandSelectorService:
             event.user_request,
             command_descriptions
         )
+        self.logger.info(f"LLM selected command: {selected_command_name}")
 
         # Get the selected command instance
         command = CommandFactory.get_command(selected_command_name)
@@ -42,5 +45,6 @@ class CommandSelectorService:
         command_args = await self.llm.generate_command_args(
             event.user_request, command.metadata.documentation
         )
+        self.logger.info(f"LLM generated arguments: {command_args}")
 
         return command, command_args
