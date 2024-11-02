@@ -111,7 +111,7 @@ class EnvironmentManager:
                 data={"error": str(e)},
             )
         finally:
-            self.cleanup()
+            pass
 
     def run_in_container(self, command: str) -> Tuple[int, str]:
         """Execute a raw command in the Docker container"""
