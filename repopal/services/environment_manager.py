@@ -70,6 +70,7 @@ class EnvironmentManager:
                 volumes={str(self.work_dir): {"bind": "/workspace", "mode": "rw"}},
                 working_dir="/workspace",
                 environment=environment or {},
+                user="1000:1000"  # Run as non-root user
             )
 
     async def execute_command(

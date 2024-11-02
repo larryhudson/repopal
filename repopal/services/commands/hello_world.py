@@ -14,7 +14,13 @@ class HelloWorldCommand(Command[HelloWorldArgs]):
     dockerfile = """
 FROM python:3.9-slim
 
+# Create non-root user
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /workspace && \
+    chown -R appuser:appuser /workspace
+
 WORKDIR /workspace
+USER appuser
 
 CMD ["tail", "-f", "/dev/null"]
 """
@@ -34,7 +40,7 @@ CMD ["tail", "-f", "/dev/null"]
 
     def get_execution_command(self, args: HelloWorldArgs) -> str:
         """Return the shell command to write hello world"""
-        return '/bin/sh -c \'echo "Hello world" > hello.txt\''
+        return '/bin/sh -c \'echo "Hello world" > /workspace/hello.txt && ls -l /workspace/hello.txt && cat /workspace/hello.txt\''
 
     def can_handle_event(self, event_type: str) -> bool:
         return True
