@@ -67,8 +67,8 @@ async def test_end_to_end_command_execution(test_repo):
         selector = CommandSelectorService()
         manager = EnvironmentManager()
 
-    # Create a test event for a simple find/replace operation
-    event = StandardizedEvent(
+        # Create a test event for a simple find/replace operation
+        event = StandardizedEvent(
         provider=WebhookProvider.GITHUB,
         event_type="issue",
         action="opened",
