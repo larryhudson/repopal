@@ -96,15 +96,7 @@ async def test_hello_world_command(test_repo):
     )
 
     try:
-        # Set up repository
-        work_dir = manager.setup_repository(config.repo_url, config.branch)
-        assert work_dir.exists()
-
-        # Set up container
-        manager.setup_container(command)
-        assert manager.container is not None
-
-        # Execute hello world command
+        # Execute hello world command - this will handle setup
         args = HelloWorldArgs(working_dir=str(work_dir))
         result = await manager.execute_command(command, args, config)
 
