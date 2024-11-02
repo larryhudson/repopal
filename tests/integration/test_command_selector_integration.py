@@ -113,4 +113,4 @@ async def test_end_to_end_command_execution(test_repo):
             assert "world" not in modified_content
 
     finally:
-        manager.teardown()
+        manager.cleanup()
