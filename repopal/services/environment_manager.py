@@ -1,7 +1,7 @@
 import logging
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 
 import docker
 import git
@@ -81,6 +81,36 @@ class EnvironmentManager:
                 user="1000:1000",  # Run as non-root user
             )
 
+    def get_repository_changes(self) -> List[Dict[str, str]]:
+        """Get the git diff of changes made in the repository
+
+        Returns:
+            List of dicts containing file paths and their diffs
+        """
+        if not self.work_dir:
+            return []
+
+        repo = git.Repo(self.work_dir)
+        changes = []
+        
+        # Get diff of all changes (staged and unstaged)
+        diff = repo.git.diff(None)
+        if diff:
+            changes.append({
+                "type": "diff",
+                "content": diff
+            })
+        
+        # Get untracked files
+        untracked = repo.untracked_files
+        if untracked:
+            changes.append({
+                "type": "untracked",
+                "files": untracked
+            })
+            
+        return changes
+
     async def execute_command(
         self, command: Command, args: Dict[str, Any], config: EnvironmentConfig
     ) -> CommandResult:
@@ -95,17 +125,26 @@ class EnvironmentManager:
             # Execute in container
             exit_code, output = self.run_in_container(shell_command)
 
+            # Get repository changes after command execution
+            changes = self.get_repository_changes()
+
             if exit_code == 0:
                 return CommandResult(
                     success=True,
                     message=f"Command {command.metadata.name} completed successfully",
-                    data={"output": output if output else "No output"},
+                    data={
+                        "output": output if output else "No output",
+                        "changes": changes
+                    },
                 )
             else:
                 return CommandResult(
                     success=False,
                     message=f"Command failed with exit code {exit_code}",
-                    data={"error": output},
+                    data={
+                        "error": output,
+                        "changes": changes
+                    },
                 )
         except Exception as e:
             return CommandResult(
