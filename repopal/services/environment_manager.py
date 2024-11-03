@@ -122,15 +122,8 @@ class EnvironmentManager:
             if not self.container:
                 self.setup_container(command, config.environment_vars)
 
-            # Convert dict args to the appropriate type
-            if command.__class__.__name__ == "FindReplaceCommand":
-                from repopal.services.commands.find_replace import FindReplaceArgs
-                command_args = FindReplaceArgs(**args)
-            else:
-                command_args = args
-
             # Get the command to execute
-            shell_command = command.get_execution_command(command_args)
+            shell_command = command.get_execution_command(args)
 
             # Execute in container
             exit_code, output = self.run_in_container(shell_command)
