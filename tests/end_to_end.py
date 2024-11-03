@@ -48,10 +48,10 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
     try:
         # Setup services
         webhook_secret = "test_secret"
-        handler = GitHubHandler(webhook_secret=webhook_secret)
+        service_handler = GitHubHandler(webhook_secret=webhook_secret)
         llm_service = LLMService()
-        selector = CommandSelectorService(llm=llm_service)
-        manager = EnvironmentManager()
+        command_selector = CommandSelectorService(llm=llm_service)
+        environment_manager = EnvironmentManager()
 
         # Create a test issue payload
         issue_payload = {
@@ -72,94 +72,94 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
         headers, payload_bytes = webhook_signature(webhook_secret, issue_payload)
 
         # Validate webhook
-        assert handler.validate_webhook(headers, issue_payload) is True
+        assert service_handler.validate_webhook(headers, issue_payload) is True
 
         # Process webhook to get standardized event
-        event = handler.process_webhook(issue_payload)
+        event = service_handler.process_webhook(issue_payload)
         assert isinstance(event, StandardizedEvent)
         assert event.event_type == "issue"
         assert event.action == "opened"
 
         # Select command and generate arguments
-        command, args = await selector.select_and_prepare_command(event)
+        command, args = await command_selector.select_and_prepare_command(event)
         assert command is not None, "Should select a command"
         assert args is not None, "Should generate arguments"
 
         # Set up environment
-        config = EnvironmentConfig(
+        environment_config = EnvironmentConfig(
             repo_url=str(test_repo),
             branch="main",
             environment_vars={},
         )
 
         # Set up repository and container
-        work_dir = manager.setup_repository(config.repo_url, config.branch)
+        work_dir = environment_manager.setup_repository(
+            environment_config.repo_url, environment_config.branch
+        )
         assert work_dir.exists()
-        manager.setup_container(command)
-        assert manager.container is not None
+        environment_manager.setup_container(command)
+        assert environment_manager.container is not None
 
         # Use args directly since they're already properly typed from command.convert_args()
         command_args = args
 
         # Send initial received status
-        thread_id = handler.send_response(
+        thread_id = service_handler.send_response(
             payload=issue_payload,
-            message=await selector.llm.generate_status_message(
-                'received',
-                {'user_request': event.user_request}
+            message=await llm_service.generate_status_message(
+                "received", {"user_request": event.user_request}
             ),
-            response_type=ResponseType.INITIAL
+            response_type=ResponseType.INITIAL,
         )
 
         # Send command selected status
-        thread_id = handler.send_response(
+        thread_id = service_handler.send_response(
             payload=issue_payload,
-            message=await selector.llm.generate_status_message(
-                'selected',
+            message=await llm_service.generate_status_message(
+                "selected",
                 {
-                    'user_request': event.user_request,
-                    'command_name': command.__class__.__name__,
-                    'command_args': args
-                }
+                    "user_request": event.user_request,
+                    "command_name": command.__class__.__name__,
+                    "command_args": args,
+                },
             ),
             response_type=ResponseType.UPDATE,
-            thread_id=thread_id
+            thread_id=thread_id,
         )
 
         # Execute the command
-        result = await manager.execute_command(command, command_args, config)
+        result = await environment_manager.execute_command(
+            command, command_args, environment_config
+        )
 
         # Log the result for debugging
         logging.debug(f"Command execution result: {result}")
 
         # Get changes summary
-        changes = manager.get_repository_changes()
-        changes_summary = await selector.llm.generate_change_summary(
-            event.user_request,
-            command.__class__.__name__,
-            result.output,
-            changes
+        changes = environment_manager.get_repository_changes()
+        changes_summary = await llm_service.generate_change_summary(
+            event.user_request, command.__class__.__name__, result.output, changes
         )
 
         # Send final status with changes
-        handler.send_response(
+        service_handler.send_response(
             payload=issue_payload,
-            message=await selector.llm.generate_status_message(
-                'completed',
+            message=await llm_service.generate_status_message(
+                "completed",
                 {
-                    'user_request': event.user_request,
-                    'changes_summary': changes_summary
-                }
+                    "user_request": event.user_request,
+                    "changes_summary": changes_summary,
+                },
             ),
             response_type=ResponseType.FINAL,
-            thread_id=thread_id
+            thread_id=thread_id,
         )
 
         # Verify command executed successfully
         assert result.success
 
         # Verify the changes were made
-        changes = manager.get_repository_changes()
+        changes = environment_manager.get_repository_changes()
         assert changes, "Should have detected changes in the repository"
 
         # For find/replace command, verify the specific changes
@@ -172,6 +172,6 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
             assert "+Hello everyone!" in diff_changes["content"]
 
     finally:
-        manager.cleanup()
+        environment_manager.cleanup()
         # Clean up the event loop
         loop.close()
