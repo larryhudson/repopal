@@ -27,7 +27,7 @@ class ServiceHandler(ABC):
     @abstractmethod
     def send_response(
         self,
-        event: StandardizedEvent,
+        payload: Dict[str, Any],
         message: str,
         response_type: ResponseType,
         thread_id: Optional[str] = None,
@@ -36,7 +36,7 @@ class ServiceHandler(ABC):
         Send a response to the service (GitHub/Slack/Linear)
         
         Args:
-            event: The original event being responded to
+            payload: The original service-specific webhook payload
             message: The response message content
             response_type: Type of response (initial/update/final) 
             thread_id: Optional ID of existing response thread to update

@@ -113,7 +113,7 @@ class GitHubHandler(ServiceHandler):
 
     def send_response(
         self,
-        event: StandardizedEvent,
+        payload: Dict[str, Any],
         message: str,
         response_type: ResponseType,
         thread_id: Optional[str] = None,
@@ -124,9 +124,18 @@ class GitHubHandler(ServiceHandler):
         For issues/PRs, this creates or updates a comment
         For push events, this creates a commit status
         """
-        raw_payload = event.raw_payload
+        # Determine event type from payload
+        event_type = None
+        if "pull_request" in payload:
+            event_type = "pull_request"
+        elif "comment" in payload:
+            event_type = "comment" 
+        elif "issues" in payload or "issue" in payload:
+            event_type = "issue"
+        else:
+            event_type = "push"
 
-        if event.event_type in ("issue", "pull_request", "comment"):
+        if event_type in ("issue", "pull_request", "comment"):
             # For issues/PRs/comments, we create or update a comment
             if thread_id:
                 # Update existing comment
