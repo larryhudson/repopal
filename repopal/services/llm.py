@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 from litellm import acompletion
 
 from repopal.core.config import settings
+from repopal.schemas.changes import RepositoryChanges
 
 
 class LLMService:
@@ -97,7 +98,7 @@ Then return only the dictionary in a format that can be evaluated using Python's
         user_request: str,
         command_name: str,
         command_output: str,
-        changes: Dict[str, Any]
+        changes: List[ChangeSet]
     ) -> str:
         """
         Generate a summary of the changes made by a command execution.
@@ -126,8 +127,12 @@ Then return only the dictionary in a format that can be evaluated using Python's
         user_request: str,
         command_name: str, 
         command_output: str,
-        changes: Dict[str, Any]
+        changes: List[ChangeSet]
     ) -> str:
+        # Extract diff and untracked files from changes list
+        diff_content = next((change.content for change in changes if change.type == 'diff'), 'No diff available')
+        untracked_files = next((change.files for change in changes if change.type == 'untracked'), [])
+        
         return f"""
 Given the following information about changes made to a repository:
 
@@ -141,10 +146,10 @@ Command output:
 {command_output}
 
 Git diff:
-{changes.get('diff', 'No diff available')}
+{diff_content}
 
 Untracked files:
-{', '.join(changes.get('untracked', [])) or 'None'}
+{', '.join(f.path for f in untracked_files) if untracked_files else 'None'}
 
 Write a clear, concise summary of the changes that were made.
 

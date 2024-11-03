@@ -9,6 +9,7 @@ from docker.models.containers import Container
 
 from repopal.schemas.command import CommandResult
 from repopal.schemas.environment import EnvironmentConfig
+from repopal.schemas.changes import RepositoryChanges, ChangeSet, UnTrackedFile
 from repopal.services.commands.base import Command
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -84,7 +85,7 @@ class EnvironmentManager:
                 user="1000:1000",  # Run as non-root user
             )
 
-    def get_repository_changes(self) -> List[Dict[str, str]]:
+    def get_repository_changes(self) -> List[ChangeSet]:
         """Get the git diff of changes made in the repository
 
         Returns:
@@ -96,36 +97,37 @@ class EnvironmentManager:
             return []
 
         repo = git.Repo(self.work_dir)
-        changes = []
+        changes: List[ChangeSet] = []
         
         # Get diff of all changes (staged and unstaged)
         diff = repo.git.diff(None)
         if diff:
-            changes.append({
-                "type": "diff",
-                "content": diff
-            })
+            changes.append(ChangeSet(
+                type="diff",
+                content=diff
+            ))
         
         # Get untracked files with their content
         untracked = repo.untracked_files
         if untracked:
-            untracked_contents = []
+            untracked_contents: List[UnTrackedFile] = []
             for file_path in untracked:
                 full_path = self.work_dir / file_path
                 try:
                     with open(full_path, 'r') as f:
                         content = f.read()
-                    untracked_contents.append({
-                        "path": file_path,
-                        "content": content
-                    })
+                    untracked_contents.append(UnTrackedFile(
+                        path=str(file_path),
+                        content=content
+                    ))
                 except Exception as e:
                     self.logger.warning(f"Could not read untracked file {file_path}: {e}")
             
-            changes.append({
-                "type": "untracked",
-                "files": untracked_contents
-            })
+            if untracked_contents:
+                changes.append(ChangeSet(
+                    type="untracked",
+                    files=untracked_contents
+                ))
             
         return changes
 
