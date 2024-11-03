@@ -1,16 +1,22 @@
 import hashlib
 import hmac
 import json
+import logging
 from typing import Any, Dict, Optional
 
+from github import Github
+from github.GithubException import GithubException
+
+from repopal.core.config import settings
 from repopal.schemas.service_handler import ServiceProvider, StandardizedEvent
 
 from .base import ResponseType, ServiceHandler
 
 
 class GitHubHandler(ServiceHandler):
-    def __init__(self, webhook_secret: str):
+    def __init__(self, webhook_secret: str, github_token: Optional[str] = None):
         self.webhook_secret = webhook_secret
+        self.github = Github(github_token or settings.GITHUB_TOKEN)
 
     def validate_webhook(
         self, headers: Dict[str, str], payload: Dict[str, Any]
@@ -136,15 +142,38 @@ class GitHubHandler(ServiceHandler):
             event_type = "push"
 
         if event_type in ("issue", "pull_request", "comment"):
-            # For issues/PRs/comments, we create or update a comment
-            if thread_id:
-                # Update existing comment
-                # TODO: Implement GitHub API call to update comment
-                return thread_id
-            else:
-                # Create new comment
-                # TODO: Implement GitHub API call to create comment
-                return "new_comment_id"
+            try:
+                # Extract repository and issue/PR number
+                repo_name = payload["repository"]["full_name"]
+                repo = self.github.get_repo(repo_name)
+                
+                if "issue" in payload:
+                    number = payload["issue"]["number"]
+                    issue_or_pr = repo.get_issue(number)
+                elif "pull_request" in payload:
+                    number = payload["pull_request"]["number"]
+                    issue_or_pr = repo.get_pull(number)
+                else:
+                    raise ValueError("No issue or PR found in payload")
+
+                if thread_id:
+                    # Update existing comment
+                    comment = repo.get_comment(int(thread_id))
+                    comment.edit(message)
+                    logging.info(f"Updated GitHub comment {thread_id}")
+                    return thread_id
+                else:
+                    # Create new comment
+                    comment = issue_or_pr.create_comment(message)
+                    logging.info(f"Created GitHub comment {comment.id}")
+                    return str(comment.id)
+
+            except GithubException as e:
+                logging.error(f"GitHub API error: {e}")
+                raise
+            except Exception as e:
+                logging.error(f"Error sending GitHub response: {e}")
+                raise
 
         else:
             raise ValueError(
