@@ -60,10 +60,9 @@ CMD ["tail", "-f", "/dev/null"]
     def get_execution_command(self, args: Dict[str, Any]) -> str:
         """Return the shell command to execute the command"""
         command_args = self.convert_args(args)
-        """Return the shell command to execute the find and replace operation"""
         # Escape special characters for sed
-        find_pattern = args.find_pattern.replace("/", "\\/")
-        replace_text = args.replace_text.replace("/", "\\/")
+        find_pattern = command_args.find_pattern.replace("/", "\\/")
+        replace_text = command_args.replace_text.replace("/", "\\/")
         
         # Wrap command in /bin/sh -c to ensure shell features work
         return f"/bin/sh -c \"find . -type f -name '{args.file_pattern}' -exec sed -i.bak 's/{find_pattern}/{replace_text}/g' {{}} \\; && rm -f ./*.bak && echo 'Replacement complete'\""
