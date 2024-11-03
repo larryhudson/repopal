@@ -14,27 +14,6 @@ from repopal.services.service_handlers.github import GitHubHandler
 pytestmark = pytest.mark.integration
 
 
-@pytest.fixture
-def test_repo(tmp_path):
-    """Create a test git repository"""
-    from git import Repo
-
-    repo_dir = tmp_path / "test-repo"
-    repo_dir.mkdir()
-
-    # Initialize git repo
-    repo = Repo.init(repo_dir)
-
-    # Create a test file
-    test_file = repo_dir / "test.txt"
-    test_file.write_text("test content")
-
-    # Commit the file
-    repo.index.add(["test.txt"])
-    repo.index.commit("Initial commit")
-
-    return repo_dir
-
 
 @pytest.mark.asyncio
 async def test_end_to_end_workflow(test_repo, webhook_signature):

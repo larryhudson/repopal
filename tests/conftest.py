@@ -51,6 +51,27 @@ def pytest_configure(config):
     )
 
 @pytest.fixture
+def test_repo(tmp_path):
+    """Create a test git repository"""
+    from git import Repo
+
+    repo_dir = tmp_path / "test-repo"
+    repo_dir.mkdir()
+
+    # Initialize git repo
+    repo = Repo.init(repo_dir)
+
+    # Create a test file
+    test_file = repo_dir / "test.txt"
+    test_file.write_text("Hello world! This is a test file.")
+
+    # Commit the file
+    repo.index.add(["test.txt"])
+    repo.index.commit("Initial commit")
+
+    return repo_dir
+
+@pytest.fixture
 def webhook_signature():
     """Fixture to generate webhook signatures for testing"""
     def _generate_signature(webhook_secret: str, payload: Dict[str, Any]) -> Tuple[Dict[str, str], bytes]:
