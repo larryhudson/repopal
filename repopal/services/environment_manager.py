@@ -10,6 +10,7 @@ from docker.models.containers import Container
 from repopal.schemas.command import CommandResult
 from repopal.schemas.environment import EnvironmentConfig
 from repopal.services.commands.base import Command
+from repopal.services.commands.find_replace import FindReplaceCommand, FindReplaceArgs
 
 
 class EnvironmentManager:
