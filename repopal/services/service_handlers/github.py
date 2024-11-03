@@ -1,11 +1,11 @@
 import hashlib
 import hmac
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from repopal.schemas.service_handler import ServiceProvider, StandardizedEvent
 
-from .base import ServiceHandler
+from .base import ResponseType, ServiceHandler
 
 
 class GitHubHandler(ServiceHandler):
@@ -110,3 +110,37 @@ class GitHubHandler(ServiceHandler):
             payload=standardized_payload,
             raw_payload=payload,
         )
+
+    def send_response(
+        self,
+        event: StandardizedEvent,
+        message: str,
+        response_type: ResponseType,
+        thread_id: Optional[str] = None,
+    ) -> str:
+        """
+        Send a response to GitHub based on the event type
+        
+        For issues/PRs, this creates or updates a comment
+        For push events, this creates a commit status
+        """
+        raw_payload = event.raw_payload
+        
+        if event.event_type in ("issue", "pull_request", "comment"):
+            # For issues/PRs/comments, we create or update a comment
+            if thread_id:
+                # Update existing comment
+                # TODO: Implement GitHub API call to update comment
+                return thread_id
+            else:
+                # Create new comment
+                # TODO: Implement GitHub API call to create comment
+                return "new_comment_id"
+                
+        elif event.event_type == "push":
+            # For push events, create a commit status
+            # TODO: Implement GitHub API call to create commit status
+            return "status_id"
+            
+        else:
+            raise ValueError(f"Unsupported event type for responses: {event.event_type}")
