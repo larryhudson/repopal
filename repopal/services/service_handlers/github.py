@@ -148,5 +148,5 @@ class GitHubHandler(ServiceHandler):
 
         else:
             raise ValueError(
-                f"Unsupported event type for responses: {event.event_type}"
+                f"Unsupported event type for responses: {event_type}"
             )
