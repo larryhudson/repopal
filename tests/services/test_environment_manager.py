@@ -54,13 +54,13 @@ async def test_environment_manager_setup(test_repo):
         assert exit_code == 0
         assert output.strip() == "test_value"
 
-        # Execute the find-replace command
-        args = FindReplaceArgs(
-            find_pattern="test content",
-            replace_text="new content",
-            working_dir=str(work_dir)
-        )
-        result = await command.execute(args)
+        # Execute the find-replace command through the environment manager
+        args = {
+            "find_pattern": "test content",
+            "replace_text": "new content",
+            "working_dir": str(work_dir)
+        }
+        result = await manager.execute_command(command, args, config)
         assert result.success
         assert "completed successfully" in result.message
 
