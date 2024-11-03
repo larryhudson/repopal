@@ -156,10 +156,13 @@ class EnvironmentManager:
                 data={"command_name": command.metadata.name}
             )
         except Exception as e:
+            # Create an empty RepositoryChanges object for failed commands
+            empty_changes = RepositoryChanges(tracked_changes=[], untracked_changes=[])
             return CommandResult(
                 success=False,
                 message=f"Failed to execute command: {str(e)}",
                 data={"error": str(e)},
+                changes=empty_changes
             )
 
     def run_in_container(self, command: str) -> Tuple[int, str]:
