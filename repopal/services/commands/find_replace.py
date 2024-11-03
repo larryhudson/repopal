@@ -53,10 +53,13 @@ CMD ["tail", "-f", "/dev/null"]
             """,
         )
 
+    def convert_args(self, args: Dict[str, Any]) -> TArgs:
+        """Convert dictionary arguments to the appropriate type"""
+        return TArgs(**args)
+
     def get_execution_command(self, args: Dict[str, Any]) -> str:
-        """Return the shell command to execute the find and replace operation"""
-        # Convert dict args to the appropriate type
-        command_args = FindReplaceArgs(**args)
+        """Return the shell command to execute the command"""
+        command_args = self.convert_args(args)
         """Return the shell command to execute the find and replace operation"""
         # Escape special characters for sed
         find_pattern = args.find_pattern.replace("/", "\\/")
