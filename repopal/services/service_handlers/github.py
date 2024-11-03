@@ -1,26 +1,32 @@
-from typing import Dict, Any
-import json
-import hmac
 import hashlib
-from .base import WebhookHandler
-from repopal.schemas.webhook import StandardizedEvent, WebhookProvider
+import hmac
+import json
+from typing import Any, Dict
 
-class GitHubWebhookHandler(WebhookHandler):
+from repopal.schemas.service_handler import ServiceProvider, StandardizedEvent
+
+from .base import ServiceHandler
+
+
+class GitHubHandler(ServiceHandler):
     def __init__(self, webhook_secret: str):
         self.webhook_secret = webhook_secret
 
-    def validate_webhook(self, headers: Dict[str, str], payload: Dict[str, Any]) -> bool:
+    def validate_webhook(
+        self, headers: Dict[str, str], payload: Dict[str, Any]
+    ) -> bool:
         if "X-Hub-Signature-256" not in headers:
             return False
-        
+
         signature = headers["X-Hub-Signature-256"]
         payload_bytes = json.dumps(payload).encode()
-        expected_signature = "sha256=" + hmac.new(
-            self.webhook_secret.encode(),
-            payload_bytes,
-            hashlib.sha256
-        ).hexdigest()
-        
+        expected_signature = (
+            "sha256="
+            + hmac.new(
+                self.webhook_secret.encode(), payload_bytes, hashlib.sha256
+            ).hexdigest()
+        )
+
         return hmac.compare_digest(signature, expected_signature)
 
     def process_webhook(self, payload: Dict[str, Any]) -> StandardizedEvent:
@@ -33,7 +39,7 @@ class GitHubWebhookHandler(WebhookHandler):
             event_type = "issue"
         else:
             event_type = "push"
-            
+
         # Generate detailed user request string based on event type
         user_request = ""
         if "pull_request" in payload:
@@ -68,34 +74,39 @@ class GitHubWebhookHandler(WebhookHandler):
             else:
                 user_request = f"Handle {event_type} event from {payload.get('sender', {}).get('login', 'unknown')}"
 
-
         # Extract common fields into standardized payload
         standardized_payload = {
             "title": None,
             "description": None,
-            "user": payload.get("pusher", {}).get("name") if "pusher" in payload else payload.get("sender", {}).get("login"),
+            "user": payload.get("pusher", {}).get("name")
+            if "pusher" in payload
+            else payload.get("sender", {}).get("login"),
             "repository": payload.get("repository", {}).get("full_name"),
             "url": payload.get("repository", {}).get("html_url"),
         }
 
         if "pull_request" in payload:
             pr = payload["pull_request"]
-            standardized_payload.update({
-                "title": pr.get("title"),
-                "description": pr.get("body"),
-            })
+            standardized_payload.update(
+                {
+                    "title": pr.get("title"),
+                    "description": pr.get("body"),
+                }
+            )
         elif "issue" in payload:
             issue = payload["issue"]
-            standardized_payload.update({
-                "title": issue.get("title"),
-                "description": issue.get("body"),
-            })
+            standardized_payload.update(
+                {
+                    "title": issue.get("title"),
+                    "description": issue.get("body"),
+                }
+            )
 
         return StandardizedEvent(
-            provider=WebhookProvider.GITHUB,
+            provider=ServiceProvider.GITHUB,
             event_type=event_type,
             action=payload.get("action"),
             user_request=user_request,
             payload=standardized_payload,
-            raw_payload=payload
+            raw_payload=payload,
         )

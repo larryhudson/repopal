@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict
 
-from repopal.schemas.webhook import StandardizedEvent
+from repopal.schemas.service_handler import StandardizedEvent
 from repopal.services.commands.base import Command
 from repopal.services.commands.factory import CommandFactory
 from repopal.services.llm import LLMService
@@ -33,8 +33,7 @@ class CommandSelectorService:
 
         # Use LLM to select the best command
         selected_command_name = await self.llm.select_command(
-            event.user_request,
-            command_descriptions
+            event.user_request, command_descriptions
         )
         self.logger.info(f"LLM selected command: {selected_command_name}")
 

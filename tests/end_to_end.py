@@ -1,25 +1,44 @@
-import pytest
 import logging
-import json
-import hmac
-import hashlib
-from pathlib import Path
-from git import Repo
-from repopal.schemas.webhook import StandardizedEvent, WebhookProvider
-from repopal.services.commands.find_replace import FindReplaceArgs, FindReplaceCommand
+
+import pytest
+
 from repopal.schemas.environment import EnvironmentConfig
+from repopal.schemas.service_handler import StandardizedEvent
 from repopal.services.command_selector import CommandSelectorService
+from repopal.services.commands.find_replace import FindReplaceCommand
 from repopal.services.environment_manager import EnvironmentManager
-from repopal.services.webhook_handlers.github import GitHubWebhookHandler
-from repopal.services.webhook_factory import WebhookHandlerFactory
-from tests.integration.test_environment_manager_integration import test_repo
+from repopal.services.service_handlers.github import GitHubHandler
 
 pytestmark = pytest.mark.integration
+
+
+@pytest.fixture
+def test_repo(tmp_path):
+    """Create a test git repository"""
+    from git import Repo
+
+    repo_dir = tmp_path / "test-repo"
+    repo_dir.mkdir()
+
+    # Initialize git repo
+    repo = Repo.init(repo_dir)
+
+    # Create a test file
+    test_file = repo_dir / "test.txt"
+    test_file.write_text("test content")
+
+    # Commit the file
+    repo.index.add(["test.txt"])
+    repo.index.commit("Initial commit")
+
+    return repo_dir
+
 
 @pytest.mark.asyncio
 async def test_end_to_end_workflow(test_repo, webhook_signature):
     """Integration test that simulates full workflow from webhook to command execution"""
     import asyncio
+
     # Create new event loop for this test
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -27,7 +46,7 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
     try:
         # Setup services
         webhook_secret = "test_secret"
-        handler = GitHubWebhookHandler(webhook_secret=webhook_secret)
+        handler = GitHubHandler(webhook_secret=webhook_secret)
         selector = CommandSelectorService()
         manager = EnvironmentManager()
 
@@ -37,13 +56,13 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
             "issue": {
                 "title": "Update greeting",
                 "body": "Please replace all occurrences of 'world' with 'everyone' in test.txt",
-                "user": {"login": "user1"}
+                "user": {"login": "user1"},
             },
             "repository": {
                 "full_name": str(test_repo),
-                "html_url": f"https://github.com/{test_repo}"
+                "html_url": f"https://github.com/{test_repo}",
             },
-            "sender": {"login": "user1"}
+            "sender": {"login": "user1"},
         }
 
         # Generate webhook signature
@@ -87,11 +106,11 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
 
         # Verify command executed successfully
         assert result.success
-        
+
         # Verify the changes were made
         changes = manager.get_repository_changes()
         assert changes, "Should have detected changes in the repository"
-        
+
         # For find/replace command, verify the specific changes
         if isinstance(command, FindReplaceCommand):
             # Check the diff content

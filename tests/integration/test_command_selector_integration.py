@@ -1,13 +1,9 @@
 import pytest
-import logging
-from git import Repo
-from repopal.schemas.webhook import StandardizedEvent, WebhookProvider
-from repopal.services.commands.find_replace import FindReplaceArgs, FindReplaceCommand
-from tests.integration.test_environment_manager_integration import test_repo
-from repopal.schemas.environment import EnvironmentConfig
+
+from repopal.schemas.service_handler import StandardizedEvent, WebhookProvider
 from repopal.services.command_selector import CommandSelectorService
-from repopal.services.environment_manager import EnvironmentManager
 from repopal.services.commands.aider import AiderCommand
+from repopal.services.commands.find_replace import FindReplaceCommand
 
 pytestmark = pytest.mark.integration
 
@@ -52,5 +48,3 @@ async def test_command_selector_with_real_llm():
     # Print results for manual inspection
     print(f"\nSelected command: {command.metadata.name}")
     print(f"Generated arguments: {args}")
-
-

@@ -1,16 +1,19 @@
 from enum import Enum
-from pydantic import BaseModel, ConfigDict
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-class WebhookProvider(str, Enum):
+from pydantic import BaseModel, ConfigDict
+
+
+class ServiceProvider(str, Enum):
     GITHUB = "github"
     SLACK = "slack"
     LINEAR = "linear"
 
+
 class StandardizedEvent(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    
-    provider: WebhookProvider
+
+    provider: ServiceProvider
     event_type: str  # e.g. "pull_request", "issue", "push"
     action: str | None = None  # e.g. "opened", "closed", "updated"
     user_request: str  # Human readable description of the event

@@ -1,3 +1,8 @@
+import hashlib
+import hmac
+import json
+from typing import Any, Dict, Tuple
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -44,11 +49,6 @@ def pytest_configure(config):
         "markers",
         "integration: mark test as integration test that uses real external services",
     )
-import pytest
-import json
-import hmac
-import hashlib
-from typing import Dict, Any, Tuple
 
 @pytest.fixture
 def webhook_signature():
@@ -60,11 +60,11 @@ def webhook_signature():
             msg=payload_bytes,
             digestmod=hashlib.sha256
         ).hexdigest()
-        
+
         headers = {
             "X-Hub-Signature-256": f"sha256={signature}"
         }
-        
+
         return headers, payload_bytes
-    
+
     return _generate_signature

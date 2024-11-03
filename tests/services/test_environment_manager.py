@@ -33,17 +33,10 @@ async def test_environment_manager_setup(test_repo):
     manager = EnvironmentManager()
     command = FindReplaceCommand()
 
-    commit_config = CommitConfig(
-        enabled=True,
-        message_format="test: {command_name} changes",
-        commit_all=True
-    )
-
     config = EnvironmentConfig(
         repo_url=str(test_repo),
         branch="main",
         environment_vars={"TEST_VAR": "test_value"},
-        commit_config=commit_config
     )
 
     try:
@@ -65,7 +58,7 @@ async def test_environment_manager_setup(test_repo):
         args = {
             "find_pattern": "test content",
             "replace_text": "new content",
-            "working_dir": str(work_dir)
+            "working_dir": str(work_dir),
         }
         result = await manager.execute_command(command, args, config)
         assert result.success
@@ -74,15 +67,14 @@ async def test_environment_manager_setup(test_repo):
     finally:
         manager.cleanup()
 
+
 @pytest.mark.asyncio
 async def test_get_repository_changes(test_repo):
     """Test that we can detect changes in the repository"""
     manager = EnvironmentManager()
 
     config = EnvironmentConfig(
-        repo_url=str(test_repo),
-        branch="main",
-        environment_vars={}
+        repo_url=str(test_repo), branch="main", environment_vars={}
     )
 
     try:
@@ -111,8 +103,12 @@ async def test_get_repository_changes(test_repo):
         assert "-test content" in diff_entry["content"]
 
         # Verify untracked files and their content
-        untracked_entry = next(change for change in changes if change["type"] == "untracked")
-        untracked_file = next(f for f in untracked_entry["files"] if f["path"] == "new.txt")
+        untracked_entry = next(
+            change for change in changes if change["type"] == "untracked"
+        )
+        untracked_file = next(
+            f for f in untracked_entry["files"] if f["path"] == "new.txt"
+        )
         assert untracked_file["content"] == "new file content"
 
     finally:

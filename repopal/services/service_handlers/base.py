@@ -1,10 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any
-from repopal.schemas.webhook import StandardizedEvent
+from typing import Any, Dict
 
-class WebhookHandler(ABC):
+from repopal.schemas.service_handler import StandardizedEvent
+
+
+class ServiceHandler(ABC):
     @abstractmethod
-    def validate_webhook(self, headers: Dict[str, str], payload: Dict[str, Any]) -> bool:
+    def validate_webhook(
+        self, headers: Dict[str, str], payload: Dict[str, Any]
+    ) -> bool:
         """Validate the webhook signature/authenticity"""
         pass
 

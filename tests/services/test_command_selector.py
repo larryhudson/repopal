@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from repopal.schemas.command import CommandMetadata
-from repopal.schemas.webhook import StandardizedEvent
+from repopal.schemas.service_handler import StandardizedEvent
 from repopal.services.command_selector import CommandSelectorService
 
 
@@ -13,7 +13,7 @@ class MockCommand:
         self.metadata = CommandMetadata(
             name=name,
             description=description,
-            documentation="Test command documentation"
+            documentation="Test command documentation",
         )
 
 
@@ -25,7 +25,7 @@ def service():
         instance.select_command.return_value = "test_command"
         instance.select_command.return_value = asyncio.Future()
         instance.select_command.return_value.set_result("test_command")
-        
+
         instance.generate_command_args.return_value = asyncio.Future()
         instance.generate_command_args.return_value.set_result({"arg1": "value1"})
         service = CommandSelectorService()
@@ -42,9 +42,7 @@ def mock_command_factory():
         yield mock
 
 
-async def test_select_and_prepare_command_success(
-    service, mock_command_factory
-):
+async def test_select_and_prepare_command_success(service, mock_command_factory):
     service_instance, mock_llm = service
     # Arrange
     event = StandardizedEvent(
@@ -52,7 +50,7 @@ async def test_select_and_prepare_command_success(
         event_type="push",
         payload={},
         user_request="Test user request",
-        raw_payload={"test": "data"}
+        raw_payload={"test": "data"},
     )
 
     # Act
@@ -64,16 +62,14 @@ async def test_select_and_prepare_command_success(
     )
     mock_llm.select_command.assert_called_once_with(
         "Test user request",
-        [{"name": "test_command", "description": "Test command description"}]
+        [{"name": "test_command", "description": "Test command description"}],
     )
     mock_llm.generate_command_args.assert_called_once()
     assert isinstance(command, MockCommand)
     assert args == {"arg1": "value1"}
 
 
-async def test_select_and_prepare_command_no_commands(
-    service, mock_command_factory
-):
+async def test_select_and_prepare_command_no_commands(service, mock_command_factory):
     service_instance, _ = service
     # Arrange
     event = StandardizedEvent(
@@ -81,7 +77,7 @@ async def test_select_and_prepare_command_no_commands(
         event_type="unknown_event",
         payload={},
         user_request="Test user request",
-        raw_payload={"test": "data"}
+        raw_payload={"test": "data"},
     )
     mock_command_factory.get_commands_for_event.return_value = []
 
