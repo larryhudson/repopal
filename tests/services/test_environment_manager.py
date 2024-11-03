@@ -110,9 +110,10 @@ async def test_get_repository_changes(test_repo):
         assert "modified content" in diff_entry["content"]
         assert "-test content" in diff_entry["content"]
 
-        # Verify untracked files
+        # Verify untracked files and their content
         untracked_entry = next(change for change in changes if change["type"] == "untracked")
-        assert "new.txt" in untracked_entry["files"]
+        untracked_file = next(f for f in untracked_entry["files"] if f["path"] == "new.txt")
+        assert untracked_file["content"] == "new file content"
 
     finally:
         manager.cleanup()
