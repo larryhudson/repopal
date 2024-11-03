@@ -7,6 +7,7 @@ from repopal.schemas.service_handler import StandardizedEvent
 from repopal.services.command_selector import CommandSelectorService
 from repopal.services.commands.find_replace import FindReplaceCommand
 from repopal.services.environment_manager import EnvironmentManager
+from repopal.services.service_handlers.base import ResponseType
 from repopal.services.service_handlers.github import GitHubHandler
 
 pytestmark = pytest.mark.integration
