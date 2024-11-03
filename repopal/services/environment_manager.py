@@ -88,7 +88,9 @@ class EnvironmentManager:
         """Get the git diff of changes made in the repository
 
         Returns:
-            List of dicts containing file paths and their diffs
+            List of dicts containing:
+            - For changed files: their git diff
+            - For untracked files: their full content
         """
         if not self.work_dir:
             return []
@@ -104,12 +106,25 @@ class EnvironmentManager:
                 "content": diff
             })
         
-        # Get untracked files
+        # Get untracked files with their content
         untracked = repo.untracked_files
         if untracked:
+            untracked_contents = []
+            for file_path in untracked:
+                full_path = self.work_dir / file_path
+                try:
+                    with open(full_path, 'r') as f:
+                        content = f.read()
+                    untracked_contents.append({
+                        "path": file_path,
+                        "content": content
+                    })
+                except Exception as e:
+                    self.logger.warning(f"Could not read untracked file {file_path}: {e}")
+            
             changes.append({
                 "type": "untracked",
-                "files": untracked
+                "files": untracked_contents
             })
             
         return changes
