@@ -55,13 +55,15 @@ CMD ["tail", "-f", "/dev/null"]
 
     def get_execution_command(self, args: FindReplaceArgs) -> str:
         """Return the shell command to execute the command"""
+        # Convert args to proper type
         command_args = self.convert_args(args)
+        
         # Escape special characters for sed
         find_pattern = command_args.find_pattern.replace("/", "\\/")
         replace_text = command_args.replace_text.replace("/", "\\/")
         
         # Wrap command in /bin/sh -c to ensure shell features work
-        return f"/bin/sh -c \"find . -type f -name '{args.file_pattern}' -exec sed -i.bak 's/{find_pattern}/{replace_text}/g' {{}} \\; && rm -f ./*.bak && echo 'Replacement complete'\""
+        return f"/bin/sh -c \"find . -type f -name '{command_args.file_pattern}' -exec sed -i.bak 's/{find_pattern}/{replace_text}/g' {{}} \\; && rm -f ./*.bak && echo 'Replacement complete'\""
 
     def can_handle_event(self, event_type: str) -> bool:
         # This command can be triggered by various events
