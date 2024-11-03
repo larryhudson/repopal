@@ -119,8 +119,14 @@ class EnvironmentManager:
             if not self.container:
                 self.setup_container(command, config.environment_vars)
 
+            # Convert dict args to the appropriate type
+            if isinstance(command, FindReplaceCommand):
+                command_args = FindReplaceArgs(**args)
+            else:
+                command_args = args
+
             # Get the command to execute
-            shell_command = command.get_execution_command(args)
+            shell_command = command.get_execution_command(command_args)
 
             # Execute in container
             exit_code, output = self.run_in_container(shell_command)
