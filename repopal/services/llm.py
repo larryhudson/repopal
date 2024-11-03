@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import Any, Dict, List
 
@@ -25,6 +26,7 @@ class LLMService:
             ],
         )
         completion = response.choices[0].message.content.strip()
+        logging.info(f"LLM Response: {completion}")
         return self._extract_answer(completion)
 
     async def select_command(
