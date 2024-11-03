@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 from litellm import acompletion
 
 from repopal.core.config import settings
-from repopal.schemas.changes import RepositoryChanges
+from repopal.schemas.changes import RepositoryChanges, ChangeSet
 
 
 class LLMService:
