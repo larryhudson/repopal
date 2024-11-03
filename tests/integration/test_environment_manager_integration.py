@@ -55,6 +55,17 @@ async def test_environment_manager_setup(test_repo):
         assert "Hello everyone!" in modified_content
         assert "world" not in modified_content
 
+        # Verify changes were captured correctly
+        changes = manager.get_repository_changes()
+        assert len(changes) > 0
+        
+        # Should have diff changes
+        diff_changes = next((c for c in changes if c.type == "diff"), None)
+        assert diff_changes is not None
+        assert "test.txt" in diff_changes.content
+        assert "+Hello everyone" in diff_changes.content
+        assert "-Hello world" in diff_changes.content
+
         return result
     finally:
         pass
