@@ -8,8 +8,8 @@ from repopal.services.llm import LLMService
 
 
 class CommandSelectorService:
-    def __init__(self):
-        self.llm = LLMService()
+    def __init__(self, llm: LLMService):
+        self.llm = llm
         self.logger = logging.getLogger(__name__)
 
     async def select_and_prepare_command(

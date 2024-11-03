@@ -48,7 +48,8 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
         # Setup services
         webhook_secret = "test_secret"
         handler = GitHubHandler(webhook_secret=webhook_secret)
-        selector = CommandSelectorService()
+        llm_service = LLMService()
+        selector = CommandSelectorService(llm=llm_service)
         manager = EnvironmentManager()
 
         # Create a test issue payload
