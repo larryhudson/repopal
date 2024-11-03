@@ -146,24 +146,15 @@ class EnvironmentManager:
             # Get repository changes after command execution
             changes = self.get_repository_changes()
 
-            if exit_code == 0:
-                return CommandResult(
-                    success=True,
-                    message=f"Command {command.metadata.name} completed successfully",
-                    data={
-                        "output": output if output else "No output",
-                        "changes": changes
-                    },
-                )
-            else:
-                return CommandResult(
-                    success=False,
-                    message=f"Command failed with exit code {exit_code}",
-                    data={
-                        "error": output,
-                        "changes": changes
-                    },
-                )
+            return CommandResult(
+                success=exit_code == 0,
+                message=f"Command {command.metadata.name} {'completed successfully' if exit_code == 0 else 'failed'}",
+                exit_code=exit_code,
+                output=output if exit_code == 0 else None,
+                error=output if exit_code != 0 else None,
+                changes=changes,
+                data={"command_name": command.metadata.name}
+            )
         except Exception as e:
             return CommandResult(
                 success=False,
