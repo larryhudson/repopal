@@ -117,7 +117,7 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
         # Get changes summary
         changes = environment_manager.get_repository_changes()
         changes_summary = await llm_service.generate_change_summary(
-            event.user_request, command.__class__.__name__, result.data["output"], changes
+            event.user_request, command.__class__.__name__, result.output, changes
         )
 
         # Send final status with changes
