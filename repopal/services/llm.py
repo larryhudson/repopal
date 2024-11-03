@@ -153,6 +153,56 @@ Write out your analysis between <reasoning></reasoning> tags.
 Then provide a natural language summary of the changes between <answer></answer> tags.
 """
 
+    async def generate_status_message(
+        self,
+        stage: str,
+        context: Dict[str, Any]
+    ) -> str:
+        """
+        Generate an appropriate status message for the current stage of processing.
+        
+        Args:
+            stage: The current processing stage ('received', 'selected', 'completed')
+            context: Relevant information for generating the message
+        """
+        prompts = {
+            'received': f"""
+Generate a friendly message acknowledging receipt of this request:
+"{context.get('user_request', '')}"
+
+The message should indicate we are processing it.
+
+Write out your reasoning between <reasoning></reasoning> tags.
+Then provide the message between <answer></answer> tags.
+""",
+            'selected': f"""
+Generate a status update message indicating we have selected this command:
+{context.get('command_name', '')}
+
+With these arguments:
+{context.get('command_args', {})}
+
+To handle this request:
+"{context.get('user_request', '')}"
+
+Write out your reasoning between <reasoning></reasoning> tags.
+Then provide the message between <answer></answer> tags.
+""",
+            'completed': f"""
+Generate a completion message summarizing these changes:
+{context.get('changes_summary', '')}
+
+In response to this request:
+"{context.get('user_request', '')}"
+
+Write out your reasoning between <reasoning></reasoning> tags.
+Then provide the message between <answer></answer> tags.
+"""
+        }
+
+        system_prompt = "You are a helpful assistant providing status updates on automated tasks."
+        return await self.get_completion(system_prompt, prompts[stage])
+
     def _extract_answer(self, text: str) -> str:
         """Extract the content between <answer></answer> tags."""
         match = re.search(r'<answer>(.*?)</answer>', text, re.DOTALL)

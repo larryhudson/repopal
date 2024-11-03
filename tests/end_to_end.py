@@ -98,11 +98,59 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
         # Use args directly since they're already properly typed from command.convert_args()
         command_args = args
 
-        # Execute the selected command
+        # Send initial received status
+        thread_id = handler.send_response(
+            payload=issue_payload,
+            message=await selector.llm.generate_status_message(
+                'received',
+                {'user_request': event.user_request}
+            ),
+            response_type=ResponseType.INITIAL
+        )
+
+        # Send command selected status
+        thread_id = handler.send_response(
+            payload=issue_payload,
+            message=await selector.llm.generate_status_message(
+                'selected',
+                {
+                    'user_request': event.user_request,
+                    'command_name': command.__class__.__name__,
+                    'command_args': args
+                }
+            ),
+            response_type=ResponseType.UPDATE,
+            thread_id=thread_id
+        )
+
+        # Execute the command
         result = await manager.execute_command(command, command_args, config)
 
         # Log the result for debugging
         logging.debug(f"Command execution result: {result}")
+
+        # Get changes summary
+        changes = manager.get_repository_changes()
+        changes_summary = await selector.llm.generate_change_summary(
+            event.user_request,
+            command.__class__.__name__,
+            result.output,
+            changes
+        )
+
+        # Send final status with changes
+        handler.send_response(
+            payload=issue_payload,
+            message=await selector.llm.generate_status_message(
+                'completed',
+                {
+                    'user_request': event.user_request,
+                    'changes_summary': changes_summary
+                }
+            ),
+            response_type=ResponseType.FINAL,
+            thread_id=thread_id
+        )
 
         # Verify command executed successfully
         assert result.success
