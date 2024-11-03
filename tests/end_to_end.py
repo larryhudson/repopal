@@ -144,11 +144,11 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
         # For find/replace command, verify the specific changes
         if isinstance(command, FindReplaceCommand):
             # Check the diff content
-            diff_changes = next((c for c in changes if c["type"] == "diff"), None)
-            assert diff_changes, "Should have diff changes"
-            assert "everyone" in diff_changes["content"]
-            assert "-Hello world!" in diff_changes["content"]
-            assert "+Hello everyone!" in diff_changes["content"]
+            diff_changes = next((c for c in changes.tracked_changes), None)
+            assert diff_changes, "Should have tracked changes"
+            assert "everyone" in diff_changes.diff
+            assert "-Hello world!" in diff_changes.diff
+            assert "+Hello everyone!" in diff_changes.diff
 
     finally:
         environment_manager.cleanup()
