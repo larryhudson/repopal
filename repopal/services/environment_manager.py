@@ -10,7 +10,9 @@ from docker.models.containers import Container
 from repopal.schemas.command import CommandResult
 from repopal.schemas.environment import EnvironmentConfig
 from repopal.services.commands.base import Command
-from repopal.services.commands.find_replace import FindReplaceCommand, FindReplaceArgs
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from repopal.services.commands.find_replace import FindReplaceCommand, FindReplaceArgs
 
 
 class EnvironmentManager:
@@ -121,7 +123,8 @@ class EnvironmentManager:
                 self.setup_container(command, config.environment_vars)
 
             # Convert dict args to the appropriate type
-            if isinstance(command, FindReplaceCommand):
+            if command.__class__.__name__ == "FindReplaceCommand":
+                from repopal.services.commands.find_replace import FindReplaceArgs
                 command_args = FindReplaceArgs(**args)
             else:
                 command_args = args
