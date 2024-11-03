@@ -1,5 +1,7 @@
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from pydantic import BaseModel
+
+from repopal.schemas.changes import RepositoryChanges
 
 class CommandMetadata(BaseModel):
     """Metadata about a command"""
@@ -18,5 +20,5 @@ class CommandResult(BaseModel):
     exit_code: Optional[int] = None
     output: Optional[str] = None
     error: Optional[str] = None
-    changes: Optional[List[Dict[str, Any]]] = None
+    changes: Optional[RepositoryChanges] = None
     data: Optional[Dict[str, Any]] = None

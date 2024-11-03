@@ -152,7 +152,7 @@ class EnvironmentManager:
                 exit_code=exit_code,
                 output=output if exit_code == 0 else None,
                 error=output if exit_code != 0 else None,
-                changes=changes.model_dump(),
+                changes=changes,
                 data={"command_name": command.metadata.name}
             )
         except Exception as e:
@@ -162,7 +162,7 @@ class EnvironmentManager:
                 success=False,
                 message=f"Failed to execute command: {str(e)}",
                 data={"error": str(e)},
-                changes=empty_changes.model_dump()
+                changes=empty_changes
             )
 
     def run_in_container(self, command: str) -> Tuple[int, str]:
