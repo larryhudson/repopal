@@ -44,3 +44,27 @@ def pytest_configure(config):
         "markers",
         "integration: mark test as integration test that uses real external services",
     )
+import pytest
+import json
+import hmac
+import hashlib
+from typing import Dict, Any, Tuple
+
+@pytest.fixture
+def webhook_signature():
+    """Fixture to generate webhook signatures for testing"""
+    def _generate_signature(webhook_secret: str, payload: Dict[str, Any]) -> Tuple[Dict[str, str], bytes]:
+        payload_bytes = json.dumps(payload).encode()
+        signature = hmac.new(
+            key=webhook_secret.encode(),
+            msg=payload_bytes,
+            digestmod=hashlib.sha256
+        ).hexdigest()
+        
+        headers = {
+            "X-Hub-Signature-256": f"sha256={signature}"
+        }
+        
+        return headers, payload_bytes
+    
+    return _generate_signature

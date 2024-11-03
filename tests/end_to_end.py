@@ -17,7 +17,7 @@ from tests.integration.test_environment_manager_integration import test_repo
 pytestmark = pytest.mark.integration
 
 @pytest.mark.asyncio
-async def test_end_to_end_workflow(test_repo):
+async def test_end_to_end_workflow(test_repo, webhook_signature):
     """Integration test that simulates full workflow from webhook to command execution"""
     import asyncio
     # Create new event loop for this test
@@ -46,17 +46,8 @@ async def test_end_to_end_workflow(test_repo):
             "sender": {"login": "user1"}
         }
 
-        # Create webhook signature
-        payload_bytes = json.dumps(issue_payload).encode()
-        signature = hmac.new(
-            key=webhook_secret.encode(),
-            msg=payload_bytes,
-            digestmod=hashlib.sha256
-        ).hexdigest()
-        
-        headers = {
-            "X-Hub-Signature-256": f"sha256={signature}"
-        }
+        # Generate webhook signature
+        headers, payload_bytes = webhook_signature(webhook_secret, issue_payload)
 
         # Validate webhook
         assert handler.validate_webhook(headers, issue_payload) is True
