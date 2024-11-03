@@ -102,16 +102,19 @@ class EnvironmentManager:
         tracked_changes: List[TrackedChange] = []
         untracked_changes: List[UntrackedChange] = []
         
-        # Get diff of all changes (staged and unstaged)
-        diff_index = repo.index.diff(None)
-        for diff in diff_index:
-            # diff.diff is already a string in newer versions of GitPython
-            # Convert the diff output to string, decode if needed
-            diff_content = diff.diff.decode('utf-8') if isinstance(diff.diff, bytes) else str(diff.diff)
-            tracked_changes.append(TrackedChange(
-                path=diff.a_path,
-                diff=diff_content
-            ))
+        # Get all changes including staged and unstaged
+        if repo.is_dirty():
+            # Get list of changed files
+            changed_files = [item.a_path for item in repo.index.diff(None)] + [item.a_path for item in repo.index.diff('HEAD')]
+            
+            # Get diff for each changed file
+            for file_path in set(changed_files):
+                diff = repo.git.diff('HEAD', '--', file_path)
+                if diff:
+                    tracked_changes.append(TrackedChange(
+                        path=file_path,
+                        diff=diff
+                    ))
         
         # Get untracked files with their content
         for file_path in repo.untracked_files:
