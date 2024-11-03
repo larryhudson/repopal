@@ -129,9 +129,11 @@ Then return only the dictionary in a format that can be evaluated using Python's
         command_output: str,
         changes: List[ChangeSet]
     ) -> str:
-        # Extract diff and untracked files from changes list
-        diff_content = next((change.content for change in changes if change.type == 'diff'), 'No diff available')
-        untracked_files = next((change.files for change in changes if change.type == 'untracked'), [])
+        # Format tracked and untracked changes
+        tracked_changes = "\n".join(f"File: {change.path}\nDiff:\n{change.diff}" 
+                                  for change in changes.tracked_changes) or "No tracked changes"
+        untracked_files = "\n".join(f"File: {change.path}" 
+                                   for change in changes.untracked_changes) or "No untracked files"
         
         return f"""
 Given the following information about changes made to a repository:
@@ -145,11 +147,11 @@ Command executed:
 Command output:
 {command_output}
 
-Git diff:
-{diff_content}
+Tracked Changes:
+{tracked_changes}
 
-Untracked files:
-{', '.join(f.path for f in untracked_files) if untracked_files else 'None'}
+Untracked Files:
+{untracked_files}
 
 Write a clear, concise summary of the changes that were made.
 
