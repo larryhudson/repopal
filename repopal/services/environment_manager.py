@@ -34,7 +34,9 @@ class EnvironmentManager:
         if not self.work_dir:
             self.work_dir = Path(tempfile.mkdtemp())
             self.logger.debug(f"Created working directory: {self.work_dir}")
-            self.logger.debug(f"Working directory absolute path: {self.work_dir.absolute()}")
+            self.logger.debug(
+                f"Working directory absolute path: {self.work_dir.absolute()}"
+            )
 
         if github_token and "github.com" in repo_url:
             # Insert token into GitHub URL
@@ -66,9 +68,12 @@ class EnvironmentManager:
                 path=str(docker_build_dir), rm=True, forcerm=True
             )
 
+            container_name = f"repopal-{command.metadata.name}"
+
             # Run the container
             self.container = self.docker_client.containers.run(
                 image,
+                name=container_name,
                 detach=True,
                 volumes={str(self.work_dir): {"bind": "/workspace", "mode": "rw"}},
                 working_dir="/workspace",
