@@ -120,12 +120,12 @@ class GitHubHandler(ServiceHandler):
     ) -> str:
         """
         Send a response to GitHub based on the event type
-        
+
         For issues/PRs, this creates or updates a comment
         For push events, this creates a commit status
         """
         raw_payload = event.raw_payload
-        
+
         if event.event_type in ("issue", "pull_request", "comment"):
             # For issues/PRs/comments, we create or update a comment
             if thread_id:
@@ -136,11 +136,8 @@ class GitHubHandler(ServiceHandler):
                 # Create new comment
                 # TODO: Implement GitHub API call to create comment
                 return "new_comment_id"
-                
-        elif event.event_type == "push":
-            # For push events, create a commit status
-            # TODO: Implement GitHub API call to create commit status
-            return "status_id"
-            
+
         else:
-            raise ValueError(f"Unsupported event type for responses: {event.event_type}")
+            raise ValueError(
+                f"Unsupported event type for responses: {event.event_type}"
+            )
