@@ -66,3 +66,47 @@ async def test_environment_manager_setup(test_repo):
 
     finally:
         manager.cleanup()
+
+
+@pytest.mark.asyncio
+async def test_get_repository_changes(test_repo):
+    """Test that we can detect changes in the repository"""
+    manager = EnvironmentManager()
+    
+    config = EnvironmentConfig(
+        repo_url=str(test_repo),
+        branch="main",
+        environment_vars={}
+    )
+
+    try:
+        # Set up repository
+        work_dir = manager.setup_repository(config.repo_url, config.branch)
+        
+        # Initially there should be no changes
+        changes = manager.get_repository_changes()
+        assert len(changes) == 0
+        
+        # Modify existing file
+        test_file = work_dir / "test.txt"
+        test_file.write_text("modified content")
+        
+        # Create new untracked file
+        new_file = work_dir / "new.txt"
+        new_file.write_text("new file content")
+        
+        # Check changes
+        changes = manager.get_repository_changes()
+        assert len(changes) == 2
+        
+        # Verify diff content
+        diff_entry = next(change for change in changes if change["type"] == "diff")
+        assert "modified content" in diff_entry["content"]
+        assert "-test content" in diff_entry["content"]
+        
+        # Verify untracked files
+        untracked_entry = next(change for change in changes if change["type"] == "untracked")
+        assert "new.txt" in untracked_entry["files"]
+
+    finally:
+        manager.cleanup()
