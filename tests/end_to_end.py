@@ -85,11 +85,8 @@ async def test_end_to_end_workflow(test_repo):
         manager.setup_container(command)
         assert manager.container is not None
 
-        # Convert dict args to proper command args object
-        if isinstance(command, FindReplaceCommand):
-            command_args = FindReplaceArgs(**args)
-        else:
-            command_args = args
+        # Use args directly since they're already properly typed from command.convert_args()
+        command_args = args
 
         # Execute the selected command
         result = await manager.execute_command(command, command_args, config)
