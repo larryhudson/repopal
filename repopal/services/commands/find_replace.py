@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from pydantic import BaseModel
 from repopal.services.environment_manager import EnvironmentManager
 
