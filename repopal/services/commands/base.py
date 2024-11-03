@@ -28,6 +28,13 @@ class Command(Generic[TArgs], ABC):
         """
         pass
 
+    def convert_args(self, args: Dict[str, Any]) -> TArgs:
+        """Convert dictionary arguments to the appropriate type"""
+        if not hasattr(self, '_args_type'):
+            # Get the concrete type bound to TArgs for this class instance
+            self._args_type = self.__class__.__orig_bases__[0].__args__[0]
+        return self._args_type(**args)
+
     @abstractmethod
     def get_execution_command(self, args: TArgs) -> str:
         """
