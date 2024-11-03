@@ -105,9 +105,10 @@ class EnvironmentManager:
         # Get diff of all changes (staged and unstaged)
         diff_index = repo.index.diff(None)
         for diff in diff_index:
+            # diff.diff is already a string in newer versions of GitPython
             tracked_changes.append(TrackedChange(
                 path=diff.a_path,
-                diff=diff.diff.decode('utf-8')
+                diff=str(diff.diff)
             ))
         
         # Get untracked files with their content
