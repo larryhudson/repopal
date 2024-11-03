@@ -1,8 +1,11 @@
 import pytest
+from dataclasses import dataclass
 
 from repopal.schemas.environment import EnvironmentConfig
 from repopal.services.commands.find_replace import FindReplaceArgs, FindReplaceCommand
 from repopal.services.environment_manager import EnvironmentManager
+from repopal.services.environment_config import CommitConfig
+from repopal.services.commands.base import CommitHook
 
 
 @pytest.fixture
@@ -33,10 +36,17 @@ async def test_environment_manager_setup(test_repo):
     manager = EnvironmentManager()
     command = FindReplaceCommand()
 
+    commit_config = CommitConfig(
+        enabled=True,
+        message_format="test: {command_name} changes",
+        commit_all=True
+    )
+    
     config = EnvironmentConfig(
         repo_url=str(test_repo),
         branch="main",
-        environment_vars={"TEST_VAR": "test_value"}
+        environment_vars={"TEST_VAR": "test_value"},
+        commit_config=commit_config
     )
 
     try:
@@ -63,6 +73,69 @@ async def test_environment_manager_setup(test_repo):
         result = await manager.execute_command(command, args, config)
         assert result.success
         assert "completed successfully" in result.message
+
+    finally:
+        manager.cleanup()
+
+
+class TestCommitHook(CommitHook):
+    def __init__(self):
+        self.pre_commit_called = False
+        self.post_commit_called = False
+        self.last_commit_hash = None
+
+    def pre_commit(self, commit_message: str) -> str:
+        self.pre_commit_called = True
+        return f"Modified: {commit_message}"
+
+    def post_commit(self, commit_hash: str) -> None:
+        self.post_commit_called = True
+        self.last_commit_hash = commit_hash
+
+
+@pytest.mark.asyncio
+async def test_commit_hooks(test_repo):
+    """Test that commit hooks are executed properly"""
+    manager = EnvironmentManager()
+    command = FindReplaceCommand()
+    test_hook = TestCommitHook()
+    
+    commit_config = CommitConfig(
+        enabled=True,
+        message_format="test: {command_name} changes",
+        commit_all=True
+    )
+    
+    config = EnvironmentConfig(
+        repo_url=str(test_repo),
+        branch="main",
+        environment_vars={},
+        commit_config=commit_config
+    )
+
+    try:
+        # Set up repository
+        work_dir = manager.setup_repository(config.repo_url, config.branch)
+        manager.register_commit_hook(test_hook)
+        
+        # Make some changes
+        test_file = work_dir / "test.txt"
+        test_file.write_text("modified content")
+        
+        # Execute command which should trigger commit
+        args = {
+            "find_pattern": "test",
+            "replace_text": "modified",
+            "working_dir": str(work_dir)
+        }
+        result = await manager.execute_command(command, args, config)
+        
+        # Verify hooks were called
+        assert test_hook.pre_commit_called
+        assert test_hook.post_commit_called
+        assert test_hook.last_commit_hash is not None
+        assert result.commit_hash == test_hook.last_commit_hash
+        assert "Modified: test:" in result.commit_message
 
     finally:
         manager.cleanup()
