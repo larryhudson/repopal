@@ -78,9 +78,7 @@ async def test_environment_manager_setup(test_repo):
 
         return result
     finally:
-        # Only cleanup after we've verified the results
-        if "modified_content" in locals():
-            manager.cleanup()
+        pass
 
 
 @pytest.mark.asyncio
