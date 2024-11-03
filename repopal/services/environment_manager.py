@@ -9,7 +9,11 @@ from docker.models.containers import Container
 
 from repopal.schemas.command import CommandResult
 from repopal.schemas.environment import EnvironmentConfig
-from repopal.schemas.changes import RepositoryChanges, ChangeSet, UnTrackedFile
+from repopal.schemas.changes import (
+    RepositoryChanges,
+    TrackedChange,
+    UntrackedChange,
+)
 from repopal.services.commands.base import Command
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
