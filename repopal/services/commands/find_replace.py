@@ -53,11 +53,7 @@ CMD ["tail", "-f", "/dev/null"]
             """,
         )
 
-    def convert_args(self, args: Dict[str, Any]) -> FindReplaceArgs:
-        """Convert dictionary arguments to the appropriate type"""
-        return FindReplaceArgs(**args)
-
-    def get_execution_command(self, args: Dict[str, Any]) -> str:
+    def get_execution_command(self, args: FindReplaceArgs) -> str:
         """Return the shell command to execute the command"""
         command_args = self.convert_args(args)
         # Escape special characters for sed
