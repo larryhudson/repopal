@@ -92,6 +92,67 @@ Write out your reasoning between <reasoning></reasoning> tags.
 Then return only the dictionary in a format that can be evaluated using Python's eval() in <answer></answer> tags.
 """
 
+    async def generate_change_summary(
+        self,
+        user_request: str,
+        command_name: str,
+        command_output: str,
+        changes: Dict[str, Any]
+    ) -> str:
+        """
+        Generate a summary of the changes made by a command execution.
+        
+        Args:
+            user_request: The original user request
+            command_name: The name of the command that was executed
+            command_output: The output from running the command
+            changes: Dictionary containing git diff and untracked files
+            
+        Returns:
+            A natural language summary of the changes
+        """
+        prompt = self._build_change_summary_prompt(
+            user_request, 
+            command_name,
+            command_output,
+            changes
+        )
+        system_prompt = "You are a helpful assistant that summarizes code changes in clear, concise language."
+
+        return await self.get_completion(system_prompt, prompt)
+
+    def _build_change_summary_prompt(
+        self,
+        user_request: str,
+        command_name: str, 
+        command_output: str,
+        changes: Dict[str, Any]
+    ) -> str:
+        return f"""
+Given the following information about changes made to a repository:
+
+User's original request:
+"{user_request}"
+
+Command executed:
+{command_name}
+
+Command output:
+{command_output}
+
+Git diff:
+{changes.get('diff', 'No diff available')}
+
+Untracked files:
+{', '.join(changes.get('untracked', [])) or 'None'}
+
+Write a clear, concise summary of the changes that were made.
+
+Write out your analysis between <reasoning></reasoning> tags.
+
+Then provide a natural language summary of the changes between <answer></answer> tags.
+"""
+
     def _extract_answer(self, text: str) -> str:
         """Extract the content between <answer></answer> tags."""
         match = re.search(r'<answer>(.*?)</answer>', text, re.DOTALL)
