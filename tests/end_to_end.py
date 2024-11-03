@@ -114,10 +114,10 @@ async def test_end_to_end_workflow(test_repo, webhook_signature):
         # Log the result for debugging
         logging.debug(f"Command execution result: {result}")
 
-        # Get changes summary
-        changes = environment_manager.get_repository_changes()
+        # Get changes and generate summary
+        repository_changes = environment_manager.get_repository_changes()
         changes_summary = await llm_service.generate_change_summary(
-            event.user_request, command.__class__.__name__, result.output, changes
+            event.user_request, command.__class__.__name__, result.output, repository_changes
         )
 
         # Send final status with changes
