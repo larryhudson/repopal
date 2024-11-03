@@ -100,11 +100,18 @@ async def test_end_to_end_workflow(test_repo):
         # Verify command executed successfully
         assert result.success
         
-        # Verify the changes were made (if it was a find/replace command)
+        # Verify the changes were made
+        changes = manager.get_repository_changes()
+        assert changes, "Should have detected changes in the repository"
+        
+        # For find/replace command, verify the specific changes
         if isinstance(command, FindReplaceCommand):
-            modified_content = (work_dir / "test.txt").read_text()
-            assert "Hello everyone!" in modified_content
-            assert "world" not in modified_content
+            # Check the diff content
+            diff_changes = next((c for c in changes if c["type"] == "diff"), None)
+            assert diff_changes, "Should have diff changes"
+            assert "everyone" in diff_changes["content"]
+            assert "-Hello world!" in diff_changes["content"]
+            assert "+Hello everyone!" in diff_changes["content"]
 
     finally:
         manager.cleanup()
