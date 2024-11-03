@@ -106,9 +106,11 @@ class EnvironmentManager:
         diff_index = repo.index.diff(None)
         for diff in diff_index:
             # diff.diff is already a string in newer versions of GitPython
+            # Convert the diff output to string, decode if needed
+            diff_content = diff.diff.decode('utf-8') if isinstance(diff.diff, bytes) else str(diff.diff)
             tracked_changes.append(TrackedChange(
                 path=diff.a_path,
-                diff=str(diff.diff)
+                diff=diff_content
             ))
         
         # Get untracked files with their content
