@@ -98,7 +98,7 @@ Then return only the dictionary in a format that can be evaluated using Python's
         user_request: str,
         command_name: str,
         command_output: str,
-        changes: List[ChangeSet]
+        changes: RepositoryChanges
     ) -> str:
         """
         Generate a summary of the changes made by a command execution.
@@ -127,17 +127,21 @@ Then return only the dictionary in a format that can be evaluated using Python's
         user_request: str,
         command_name: str, 
         command_output: str,
-        changes: List[ChangeSet]
+        changes: RepositoryChanges
     ) -> str:
-        # Format changes by type
         changes_text = []
-        for change in changes:
-            if change.type == "diff":
-                changes_text.append(f"Tracked Changes:\n{change.content}")
-            elif change.type == "untracked" and change.files:
-                files_text = "\n".join(f"File: {f.path}\nContent:\n{f.content}" 
-                                     for f in change.files)
-                changes_text.append(f"Untracked Files:\n{files_text}")
+        
+        # Format tracked changes
+        if changes.tracked_changes:
+            tracked_text = "\n".join(f"File: {c.path}\nDiff:\n{c.diff}" 
+                                   for c in changes.tracked_changes)
+            changes_text.append(f"Tracked Changes:\n{tracked_text}")
+            
+        # Format untracked changes
+        if changes.untracked_changes:
+            untracked_text = "\n".join(f"File: {c.path}\nContent:\n{c.content}" 
+                                     for c in changes.untracked_changes)
+            changes_text.append(f"Untracked Files:\n{untracked_text}")
         
         changes_summary = "\n\n".join(changes_text) or "No changes detected"
         

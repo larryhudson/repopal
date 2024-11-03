@@ -85,51 +85,44 @@ class EnvironmentManager:
                 user="1000:1000",  # Run as non-root user
             )
 
-    def get_repository_changes(self) -> List[ChangeSet]:
+    def get_repository_changes(self) -> RepositoryChanges:
         """Get the git diff of changes made in the repository
 
         Returns:
-            List of dicts containing:
-            - For changed files: their git diff
-            - For untracked files: their full content
+            RepositoryChanges containing tracked and untracked changes
         """
         if not self.work_dir:
-            return []
+            return RepositoryChanges(tracked_changes=[], untracked_changes=[])
 
         repo = git.Repo(self.work_dir)
-        changes: List[ChangeSet] = []
+        tracked_changes: List[TrackedChange] = []
+        untracked_changes: List[UntrackedChange] = []
         
         # Get diff of all changes (staged and unstaged)
-        diff = repo.git.diff(None)
-        if diff:
-            changes.append(ChangeSet(
-                type="diff",
-                content=diff
+        diff_index = repo.index.diff(None)
+        for diff in diff_index:
+            tracked_changes.append(TrackedChange(
+                path=diff.a_path,
+                diff=diff.diff.decode('utf-8')
             ))
         
         # Get untracked files with their content
-        untracked = repo.untracked_files
-        if untracked:
-            untracked_contents: List[UnTrackedFile] = []
-            for file_path in untracked:
-                full_path = self.work_dir / file_path
-                try:
-                    with open(full_path, 'r') as f:
-                        content = f.read()
-                    untracked_contents.append(UnTrackedFile(
-                        path=str(file_path),
-                        content=content
-                    ))
-                except Exception as e:
-                    self.logger.warning(f"Could not read untracked file {file_path}: {e}")
-            
-            if untracked_contents:
-                changes.append(ChangeSet(
-                    type="untracked",
-                    files=untracked_contents
+        for file_path in repo.untracked_files:
+            full_path = self.work_dir / file_path
+            try:
+                with open(full_path, 'r') as f:
+                    content = f.read()
+                untracked_changes.append(UntrackedChange(
+                    path=str(file_path),
+                    content=content
                 ))
+            except Exception as e:
+                self.logger.warning(f"Could not read untracked file {file_path}: {e}")
             
-        return changes
+        return RepositoryChanges(
+            tracked_changes=tracked_changes,
+            untracked_changes=untracked_changes
+        )
 
     async def execute_command(
         self, command: Command, args: Dict[str, Any], config: EnvironmentConfig
