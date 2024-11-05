@@ -395,3 +395,60 @@ def test_send_response_unsupported_event(github_handler, sample_push_payload):
             message="Test response",
             response_type=ResponseType.COMMENT
         )
+
+def test_webhook_validation_missing_signature(github_handler):
+    headers = {}  # No signature header
+    payload = {"test": "data"}
+    assert github_handler.validate_webhook(headers, payload) == False
+
+@pytest.fixture
+def sample_pr_comment_payload():
+    return {
+        "action": "created",
+        "comment": {
+            "body": "Test Comment",
+            "user": {"login": "test-user"}
+        },
+        "pull_request": {
+            "number": 1,
+            "title": "Test PR",
+            "body": "Test Description"
+        },
+        "repository": {
+            "full_name": "test/repo",
+            "html_url": "https://github.com/test/repo"
+        },
+        "sender": {"login": "test-user"}
+    }
+
+def test_process_pr_comment_webhook(github_handler, sample_pr_comment_payload):
+    event = github_handler.process_webhook(sample_pr_comment_payload)
+    
+    assert event.provider == ServiceProvider.GITHUB
+    assert event.event_type == "comment"
+    assert event.action == "created"
+    assert "Test Comment" in event.user_request
+    assert "pull request" in event.user_request.lower()  # Verify it mentions PR context
+    assert event.payload["user"] == "test-user"
+
+def test_process_malformed_webhook(github_handler):
+    malformed_payload = {
+        "action": "opened",
+        "repository": {
+            "full_name": "test/repo",
+            "html_url": "https://github.com/test/repo"
+        },
+        "sender": {"login": "test-user"}
+    }
+    
+    event = github_handler.process_webhook(malformed_payload)
+    assert event.event_type == "push"  # Default fallback
+    assert event.payload["user"] == "test-user"
+
+def test_send_response_invalid_type(github_handler, sample_issue_payload):
+    with pytest.raises(ValueError):
+        github_handler.send_response(
+            payload=sample_issue_payload,
+            message="Test response",
+            response_type="INVALID_TYPE"  # Invalid response type
+        )
