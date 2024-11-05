@@ -4,6 +4,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # Existing settings...
+    SLACK_SIGNING_SECRET: str = ''
+    SLACK_BOT_TOKEN: str = ''
+    SLACK_APP_ID: str = ''
     PROJECT_NAME: str = "FastAPI Project"
     DATABASE_URL: str = "sqlite:///./test.db"  # Default for testing
     REDIS_URL: str = "redis://localhost:6379"  # Default for testing
