@@ -232,7 +232,7 @@ CMD ["tail", "-f", "/dev/null"]
             dot = sys.stdin.read(); \
             # Basic DOT to Mermaid conversion \
             mermaid = dot.replace("digraph", "classDiagram"); \
-            mermaid = re.sub(r"-> (\w+)", r"..> \\1", mermaid); \
+            mermaid = re.sub(r"-> (\w+)", r"..> \1", mermaid); \
             print(mermaid)' >> {command_args.output_path} && \
             echo '```' >> {command_args.output_path} && \
             rm classes.dot packages.dot
@@ -244,7 +244,7 @@ CMD ["tail", "-f", "/dev/null"]
             import re; \
             dot = sys.stdin.read(); \
             # Basic DOT to PlantUML conversion \
-            uml = re.sub(r"-> (\w+)", r"--|> \\1", dot); \
+            uml = re.sub(r"-> (\w+)", r"--|> \1", dot); \
             print(uml)' >> {command_args.output_path} && \
             echo '@enduml' >> {command_args.output_path} && \
             rm classes.dot packages.dot
