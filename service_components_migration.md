@@ -25,6 +25,20 @@ This document tracks the progress of migrating service connection and authentica
 
 ## 🚧 In Progress
 
+### Authentication Flow
+- OAuth implementation needed:
+  - GitHub App installation flow
+  - Service connection authentication
+  - Token management and rotation
+- Security scheme definition required:
+  - FastAPI security dependencies
+  - OAuth2 with OpenID Connect
+  - JWT validation
+- Token handling to be implemented:
+  - Access token storage
+  - Refresh token management
+  - Installation token caching
+
 ### API Routes
 - Need to create FastAPI router for service connections
 - Required endpoints:
@@ -34,11 +48,6 @@ This document tracks the progress of migrating service connection and authentica
   - PATCH /connections/{id}/status - Update status
   - DELETE /connections/{id} - Remove connection
   - GET /connections/{id}/health - Check health
-
-### Authentication Flow
-- OAuth implementation needed
-- Security scheme definition required
-- Token handling to be implemented
 
 ### Integration Points
 - UserService integration pending
