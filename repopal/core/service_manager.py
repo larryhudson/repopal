@@ -2,15 +2,21 @@
 
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from repopal.models import (
+from repopal.models.service_connection import (
     ServiceConnection,
     ServiceType,
     ConnectionStatus,
     ServiceCredential,
-    Organization
+    Repository
+)
+from repopal.repositories.service_connections import (
+    ServiceConnectionRepository,
+    ServiceCredentialRepository,
+    RepositoryRepository
 )
 from repopal.utils.crypto import CredentialEncryption
 from repopal.core.health import HealthCheckFactory, HealthStatus, HealthCheckResult
@@ -21,10 +27,13 @@ class ServiceConnectionManager:
     def __init__(self, db: Session, encryption: CredentialEncryption):
         self.db = db
         self.encryption = encryption
+        self.connection_repo = ServiceConnectionRepository()
+        self.credential_repo = ServiceCredentialRepository()
+        self.repository_repo = RepositoryRepository()
 
     async def create_connection(
         self,
-        organization_id: str,
+        organization_id: UUID,
         service_type: ServiceType,
         settings: dict,
         credentials: dict
@@ -38,7 +47,7 @@ class ServiceConnectionManager:
                 status=ConnectionStatus.PENDING,
                 settings=settings
             )
-            self.db.add(connection)
+            self.connection_repo.create(self.db, obj_in=connection)
             
             # Store credentials
             for cred_type, value in credentials.items():
@@ -47,7 +56,7 @@ class ServiceConnectionManager:
                     credential_type=cred_type
                 )
                 credential.set_credential(self.encryption, value)
-                self.db.add(credential)
+                self.credential_repo.create(self.db, obj_in=credential)
             
             await self.db.commit()
             return connection
@@ -58,23 +67,21 @@ class ServiceConnectionManager:
 
     async def get_connection(
         self,
-        connection_id: str
+        connection_id: UUID
     ) -> Optional[ServiceConnection]:
         """Get a service connection by ID"""
-        return await self.db.query(ServiceConnection).get(connection_id)
+        return self.connection_repo.get(self.db, id=connection_id)
 
     async def list_organization_connections(
         self,
-        organization_id: str
+        organization_id: UUID
     ) -> List[ServiceConnection]:
         """List all connections for an organization"""
-        return await self.db.query(ServiceConnection).filter(
-            ServiceConnection.organization_id == organization_id
-        ).all()
+        return self.connection_repo.get_by_organization(self.db, organization_id)
 
     async def update_connection_status(
         self,
-        connection_id: str,
+        connection_id: UUID,
         status: ConnectionStatus
     ) -> ServiceConnection:
         """Update connection status"""
@@ -83,16 +90,17 @@ class ServiceConnectionManager:
             raise ValueError(f"Connection {connection_id} not found")
         
         connection.status = status
+        self.connection_repo.update(self.db, db_obj=connection, obj_in={"status": status})
         await self.db.commit()
         return connection
 
-    async def delete_connection(self, connection_id: str) -> None:
+    async def delete_connection(self, connection_id: UUID) -> None:
         """Delete a service connection and its credentials"""
         connection = await self.get_connection(connection_id)
         if not connection:
             raise ValueError(f"Connection {connection_id} not found")
         
-        await self.db.delete(connection)
+        self.connection_repo.remove(self.db, id=connection_id)
         await self.db.commit()
 
     async def check_connection_health(
