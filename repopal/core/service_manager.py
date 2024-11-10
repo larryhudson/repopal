@@ -1,7 +1,6 @@
 """Service connection management module"""
 
 from typing import Optional, List, Dict, Any
-from datetime import datetime
 from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -10,8 +9,7 @@ from repopal.models.service_connection import (
     ServiceConnection,
     ServiceType,
     ConnectionStatus,
-    ServiceCredential,
-    Repository
+    ServiceCredential
 )
 from repopal.repositories.service_connections import (
     ServiceConnectionRepository,

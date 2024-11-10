@@ -17,7 +17,7 @@ from repopal.schemas.changes import (
 from repopal.services.commands.base import Command
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from repopal.services.commands.find_replace import FindReplaceCommand, FindReplaceArgs
+    pass
 
 
 class EnvironmentManager:

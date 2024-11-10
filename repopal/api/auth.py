@@ -1,13 +1,11 @@
 """Authentication routes for RepoPal"""
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2AuthorizationCodeBearer
 import httpx
-from starlette.config import Config
 
 from repopal.core.config import settings
-from repopal.schemas.oauth import OAuthToken, GitHubInstallation
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, Dict, Any
-from repopal.schemas.command import CommandMetadata, CommandArgs, CommandResult
+from repopal.schemas.command import CommandMetadata, CommandArgs
 
 TArgs = TypeVar('TArgs', bound=CommandArgs)
 

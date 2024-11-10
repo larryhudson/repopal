@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from repopal.core.config import settings
 from repopal.db.session import SessionLocal
-from repopal.schemas.oauth import OAuthToken
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     authorizationUrl="https://github.com/login/oauth/authorize",

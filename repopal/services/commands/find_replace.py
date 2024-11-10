@@ -1,8 +1,6 @@
-from typing import Dict, Any
 from pydantic import BaseModel
-from repopal.services.environment_manager import EnvironmentManager
 
-from repopal.schemas.command import CommandMetadata, CommandResult
+from repopal.schemas.command import CommandMetadata
 from repopal.services.commands.base import Command
 
 

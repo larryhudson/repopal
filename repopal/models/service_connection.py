@@ -11,7 +11,6 @@ from sqlalchemy.types import JSON
 from sqlalchemy.orm import relationship
 
 from repopal.models.base import Base
-from repopal.models.connection_event import ConnectionEvent
 from repopal.utils.crypto import CredentialEncryption
 
 

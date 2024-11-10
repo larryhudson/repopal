@@ -2,7 +2,6 @@
 
 from typing import Optional, Dict, Any
 from dataclasses import dataclass
-from datetime import datetime
 
 from github import Github, GithubIntegration
 from github.Installation import Installation
