@@ -59,14 +59,14 @@ async def github_callback(code: str):
             )
 
         # Get user info
-        user_response = await client.get(
+        # Get user info but don't store it yet
+        await client.get(
             "https://api.github.com/user",
             headers={
                 "Authorization": f"Bearer {token_data['access_token']}",
                 "Accept": "application/json",
             },
         )
-        user_data = user_response.json()
 
     return RedirectResponse(url="/auth/post-login")
 
