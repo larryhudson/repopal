@@ -9,7 +9,8 @@ This document outlines the key components for migrating service connection and a
   - `ServiceConnection`: Core connection details
   - `Repository`: Repository information
   - `ServiceCredential`: Encrypted credential storage
-- Minimal changes needed for FastAPI, mainly SQLAlchemy syntax updates
+- ⚠️ CONFLICT: New models need to be integrated with existing BaseRepository pattern
+- ⚠️ CONFLICT: Repository model may overlap with existing repository handling
 
 ## Service Management
 
@@ -22,6 +23,7 @@ This document outlines the key components for migrating service connection and a
 - Updates needed:
   - Replace Flask dependency injection with FastAPI
   - Update async/await patterns
+- ⚠️ CONFLICT: Needs integration with existing UserService and CommandSelectorService
 
 ## Security & Encryption
 
@@ -29,6 +31,7 @@ This document outlines the key components for migrating service connection and a
 - `CredentialEncryption` class for secure storage
 - Framework-agnostic implementation
 - Can be used as-is in FastAPI
+- ✓ No conflicts - clean implementation
 
 ## GitHub Integration
 
@@ -37,9 +40,8 @@ This document outlines the key components for migrating service connection and a
   - API operations via `GitHubClient`
   - Rate limit handling
   - Installation management
-- Minimal changes needed:
-  - Update async client initialization
-  - Adapt error handling
+- ⚠️ CONFLICT: Overlaps with existing GitHub-related code in services/service_handlers/github.py
+- ⚠️ CONFLICT: Need to merge GitHubHandler and GitHubClient functionality
 
 ### GitHub Installation (`repopal/services/github_installation.py`)
 - Handles GitHub App installations
@@ -47,6 +49,7 @@ This document outlines the key components for migrating service connection and a
   - Convert route handlers to FastAPI
   - Update webhook processing
   - Adapt authentication flow
+- ⚠️ CONFLICT: Needs coordination with existing SlackHandler implementation
 
 ## Error Handling
 
@@ -55,6 +58,7 @@ This document outlines the key components for migrating service connection and a
   - Service connections
   - Pipeline operations
   - Authentication
+- ✓ Compatible with existing exception hierarchy
 - Migration needs:
   - Map to FastAPI exception handlers
   - Update error response formats
@@ -67,31 +71,37 @@ This document outlines the key components for migrating service connection and a
   - Adapt to FastAPI dependency injection
   - Update async health check handlers
   - Convert response formats
+- ✓ No conflicts - new functionality
 
 ## Migration Steps
 
 1. **Database Layer**
    - Update SQLAlchemy models for latest syntax
    - Adapt database session management for FastAPI
+   - ⚠️ Ensure compatibility with existing BaseRepository pattern
 
 2. **Authentication Flow**
    - Implement FastAPI security schemes
    - Update OAuth handlers
    - Convert middleware
+   - ⚠️ Coordinate with existing user authentication system
 
 3. **API Routes**
    - Convert Flask routes to FastAPI path operations
    - Update dependency injection
    - Implement FastAPI response models
+   - ⚠️ Align with existing command and change tracking endpoints
 
 4. **Error Handling**
    - Create FastAPI exception handlers
    - Update error response schemas
+   - ✓ Build on existing exception hierarchy
 
 5. **Testing**
    - Update test fixtures for FastAPI
    - Convert test clients
    - Update mocking patterns
+   - ⚠️ Integrate with existing test patterns (see tests/services/test_command_selector.py)
 
 ## Technical Considerations
 
@@ -100,3 +110,5 @@ This document outlines the key components for migrating service connection and a
 - Implement FastAPI's dependency injection
 - Use Pydantic models for request/response validation
 - Consider FastAPI's background tasks vs Celery
+- ⚠️ Ensure consistent async/await usage across old and new code
+- ⚠️ Standardize on common patterns for service handlers
