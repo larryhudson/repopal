@@ -1,120 +1,115 @@
-# Service Connection Components Migration Guide
+# Service Connection Components Migration Status
 
-This document outlines the key components for migrating service connection and authentication code from the Flask-based implementation to FastAPI.
+This document tracks the progress of migrating service connection and authentication code from Flask to FastAPI.
 
-## Core Database Models
+## ✅ Completed Components
 
-### Service Connection Models (`repopal/models/service_connection.py`)
-- Contains essential models:
-  - `ServiceConnection`: Core connection details
-  - `Repository`: Repository information (primary model for repository management)
-  - `ServiceCredential`: Encrypted credential storage
-- Integration with BaseRepository pattern:
-  - ServiceConnectionRepository for managing connections
-  - RepositoryRepository for repository operations
-  - ServiceCredentialRepository for credential management
-- Repository model serves as the primary model for repository tracking
-  - Includes GitHub-specific fields
-  - Supports Slack channel mapping
-  - Maintains connection to parent ServiceConnection
+### Core Database Models
+- Service connection models implemented
+- Repository pattern integration complete
+- Base models established:
+  - ServiceConnection
+  - Repository
+  - ServiceCredential
+- Repository classes implemented:
+  - ServiceConnectionRepository
+  - RepositoryRepository
+  - ServiceCredentialRepository
 
-## Service Management
+### Service Management
+- ServiceConnectionManager refactored:
+  - Async/await patterns implemented
+  - Repository pattern integration complete
+  - Type safety improvements with UUID
+  - Error handling standardized
 
-### Service Manager (`repopal/core/service_manager.py`)
-- `ServiceConnectionManager` class handles:
-  - Connection lifecycle management
-  - Status updates
-  - Health checks
-- Core business logic can be reused
-- Updates needed:
-  - Replace Flask dependency injection with FastAPI
-  - Update async/await patterns
-- ⚠️ CONFLICT: Needs integration with existing UserService and CommandSelectorService
+## 🚧 In Progress
 
-## Security & Encryption
+### API Routes
+- Need to create FastAPI router for service connections
+- Required endpoints:
+  - POST /connections - Create new connection
+  - GET /connections/{id} - Get connection details
+  - GET /organizations/{id}/connections - List org connections
+  - PATCH /connections/{id}/status - Update status
+  - DELETE /connections/{id} - Remove connection
+  - GET /connections/{id}/health - Check health
 
-### Credential Encryption (`repopal/utils/crypto.py`)
-- `CredentialEncryption` class for secure storage
-- Framework-agnostic implementation
-- Can be used as-is in FastAPI
-- ✓ No conflicts - clean implementation
+### Authentication Flow
+- OAuth implementation needed
+- Security scheme definition required
+- Token handling to be implemented
 
-## GitHub Integration
+### Integration Points
+- UserService integration pending
+- CommandSelectorService integration needed
+- Background task handling for health checks
 
-### GitHub Client (`repopal/services/github.py`)
-- Features:
-  - API operations via `GitHubClient`
-  - Rate limit handling
-  - Installation management
-- ⚠️ CONFLICT: Overlaps with existing GitHub-related code in services/service_handlers/github.py
-- ⚠️ CONFLICT: Need to merge GitHubHandler and GitHubClient functionality
+## ✅ Verified Components
 
-### GitHub Installation (`repopal/services/github_installation.py`)
-- Handles GitHub App installations
-- Updates needed:
-  - Convert route handlers to FastAPI
-  - Update webhook processing
-  - Adapt authentication flow
-- ⚠️ CONFLICT: Needs coordination with existing SlackHandler implementation
+### Security & Encryption
+- CredentialEncryption implementation verified
+- Encryption patterns established
+- Key management configured
 
-## Error Handling
+### Health Monitoring
+- Health check system designed
+- HealthCheckFactory implemented
+- Service-specific checks ready
 
-### Core Exceptions (`repopal/core/exceptions.py`)
-- Custom exceptions for:
-  - Service connections
-  - Pipeline operations
-  - Authentication
-- ✓ Compatible with existing exception hierarchy
-- Migration needs:
-  - Map to FastAPI exception handlers
-  - Update error response formats
+## 📋 Next Steps
 
-## Health Monitoring
+1. **FastAPI Router Implementation**
+   - Create new router module
+   - Define path operation functions
+   - Implement request/response models
+   - Add dependency injection
+   - Set up error handlers
 
-### Health Checks (`repopal/core/health.py`)
-- Service health monitoring system
-- Updates needed:
-  - Adapt to FastAPI dependency injection
-  - Update async health check handlers
-  - Convert response formats
-- ✓ No conflicts - new functionality
+2. **Schema Updates**
+   - Create Pydantic models for:
+     - ConnectionCreate
+     - ConnectionUpdate
+     - ConnectionResponse
+     - HealthCheckResponse
+   - Add validation rules
+   - Define example responses
 
-## Migration Steps
+3. **Testing Strategy**
+   - Create FastAPI test client fixtures
+   - Add integration tests for new endpoints
+   - Update existing test patterns
+   - Add health check test cases
 
-1. **Database Layer**
-   - Update SQLAlchemy models for latest syntax
-   - Adapt database session management for FastAPI
-   - ⚠️ Ensure compatibility with existing BaseRepository pattern
+4. **Documentation**
+   - Add OpenAPI descriptions
+   - Document authentication flows
+   - Update integration guides
+   - Add example requests/responses
 
-2. **Authentication Flow**
-   - Implement FastAPI security schemes
-   - Update OAuth handlers
-   - Convert middleware
-   - ⚠️ Coordinate with existing user authentication system
+## 🔄 Integration Requirements
 
-3. **API Routes**
-   - Convert Flask routes to FastAPI path operations
-   - Update dependency injection
-   - Implement FastAPI response models
-   - ⚠️ Align with existing command and change tracking endpoints
+1. **Service Handler Coordination**
+   - Merge GitHubHandler and GitHubClient
+   - Standardize SlackHandler patterns
+   - Implement common interface
 
-4. **Error Handling**
-   - Create FastAPI exception handlers
-   - Update error response schemas
-   - ✓ Build on existing exception hierarchy
+2. **Background Tasks**
+   - Health check scheduling
+   - Credential rotation
+   - Status updates
 
-5. **Testing**
-   - Update test fixtures for FastAPI
-   - Convert test clients
-   - Update mocking patterns
-   - ⚠️ Integrate with existing test patterns (see tests/services/test_command_selector.py)
+3. **Error Handling**
+   - FastAPI exception handlers
+   - Standard error responses
+   - Rate limit handling
 
-## Technical Considerations
+## 📊 Migration Progress
 
-- Replace Flask-specific patterns with FastAPI equivalents
-- Update to modern Python async patterns
-- Implement FastAPI's dependency injection
-- Use Pydantic models for request/response validation
-- Consider FastAPI's background tasks vs Celery
-- ⚠️ Ensure consistent async/await usage across old and new code
-- ⚠️ Standardize on common patterns for service handlers
+- ✅ Core Models (100%)
+- ✅ Repository Pattern (100%)
+- ✅ Service Manager (100%)
+- 🚧 API Routes (0%)
+- 🚧 Authentication (0%)
+- ✅ Health Checks (100%)
+- 🚧 Testing (30%)
