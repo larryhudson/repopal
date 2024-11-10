@@ -7,10 +7,16 @@ This document outlines the key components for migrating service connection and a
 ### Service Connection Models (`repopal/models/service_connection.py`)
 - Contains essential models:
   - `ServiceConnection`: Core connection details
-  - `Repository`: Repository information
+  - `Repository`: Repository information (primary model for repository management)
   - `ServiceCredential`: Encrypted credential storage
-- ⚠️ CONFLICT: New models need to be integrated with existing BaseRepository pattern
-- ⚠️ CONFLICT: Repository model may overlap with existing repository handling
+- Integration with BaseRepository pattern:
+  - ServiceConnectionRepository for managing connections
+  - RepositoryRepository for repository operations
+  - ServiceCredentialRepository for credential management
+- Repository model serves as the primary model for repository tracking
+  - Includes GitHub-specific fields
+  - Supports Slack channel mapping
+  - Maintains connection to parent ServiceConnection
 
 ## Service Management
 
