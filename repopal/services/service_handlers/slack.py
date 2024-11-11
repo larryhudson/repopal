@@ -13,6 +13,7 @@ from repopal.schemas.service_handler import ServiceProvider, StandardizedEvent
 
 from .base import ResponseType, ServiceHandler
 
+# TODO: need to handle app installation events (create service connection)
 
 class SlackHandler(ServiceHandler):
     def __init__(self, signing_secret: str, bot_token: Optional[str] = None):
