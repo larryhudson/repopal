@@ -1,23 +1,19 @@
-from typing import Generator, Optional
+from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from repopal.core.config import settings
-from repopal.db.session import SessionLocal
+
+# TODO: missing / incorrect import
+from repopal.core.database import get_db
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     authorizationUrl="https://github.com/login/oauth/authorize",
     tokenUrl="https://github.com/login/oauth/access_token",
 )
 
-def get_db() -> Generator:
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
 
 async def get_current_user(
     db: Session = Depends(get_db),
@@ -38,6 +34,6 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
         
-    # Here you would typically query your user from the database
+    # TODO: Here you would typically query your user from the database
     # For now returning the decoded payload
     return payload
