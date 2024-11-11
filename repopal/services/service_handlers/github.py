@@ -12,6 +12,7 @@ from repopal.schemas.service_handler import ServiceProvider, StandardizedEvent
 
 from .base import ResponseType, ServiceHandler
 
+# TODO: need to handle app installation events (create service connection)
 
 class GitHubHandler(ServiceHandler):
     def __init__(self, webhook_secret: str, github_token: Optional[str] = None):

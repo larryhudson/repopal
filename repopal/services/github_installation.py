@@ -9,6 +9,7 @@ from repopal.models.service_connection import (
 )
 from repopal.core.service_manager import ServiceConnectionManager
 
+# TODO: do we need to handle other service installations e.g. Slack app installation, Linear app installation?
 def handle_installation_event(
     db: Session,
     payload: Dict[str, Any],
