@@ -99,7 +99,7 @@ Then return only the dictionary in a format that can be evaluated using Python's
         self,
         user_request: str,
         command_name: str,
-        command_output: str,
+        command_output: str | None = None,
         changes: RepositoryChanges,
     ) -> str:
         """

@@ -29,41 +29,13 @@ class EnvironmentManager:
         self.container: Container | None = None
         self.logger = logging.getLogger(__name__)
 
-    def setup_repository(
-        self, repo_url: str, branch: str = "main", github_token: Optional[str] = None
-    ) -> Path:
-        """Clone a repository into a temporary working directory
-
-        Args:
-            repo_url: The URL of the repository to clone
-            branch: The branch to clone (defaults to "main")
-            github_token: Optional GitHub token for authentication
-        """
-        if not self.work_dir:
-            self.work_dir = Path(tempfile.mkdtemp())
-            self.logger.debug(f"Created working directory: {self.work_dir}")
-            self.logger.debug(
-                f"Working directory absolute path: {self.work_dir.absolute()}"
-            )
-
-        if github_token and "github.com" in repo_url:
-            # Insert token into GitHub URL
-            url_parts = repo_url.split("://")
-            if len(url_parts) == 2:
-                repo_url = (
-                    f"{url_parts[0]}://x-access-token:{github_token}@{url_parts[1]}"
-                )
-
-        git.Repo.clone_from(repo_url, self.work_dir, branch=branch)
-        return self.work_dir
-
     def setup_container(
         self, command: Command, environment: Dict[str, str] = None
     ) -> None:
         """Create and start a Docker container with the working directory mounted"""
         if not self.work_dir:
             raise ValueError(
-                "Working directory not set up. Call setup_repository first."
+                "Working directory not set up. Call git_repo_manager.clone_repo first."
             )
 
         # Create a temporary directory for the Dockerfile

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from github import Github, GithubIntegration
 from github.Installation import Installation
+from github.PullRequest import PullRequest
 from github.RateLimit import RateLimit
 
 from repopal.models.service_connection import ServiceConnection
@@ -84,6 +85,21 @@ class GitHubClient:
             return list(installation.get_hooks())
         except Exception as e:
             raise ServiceConnectionError(f"Failed to get webhooks: {str(e)}")
+
+    async def create_pull_request(self, repo_owner: str, repo_name: str, branch_name: str, pr_title: str, pr_description: str) -> PullRequest:
+        """Create a pull request in the repository"""
+        if not self._client:
+           await self._init_client()
+
+        repo = self._client.get_repo(f"{repo_owner}/{repo_name}")
+        created_pr = repo.create_pull(
+                base="main",
+                head=branch_name,
+                title=pr_title,
+                body=pr_description
+        )
+
+        return created_pr
 
 async def get_github_client(connection_id: str) -> GitHubClient:
     """Get GitHub client for a service connection"""
